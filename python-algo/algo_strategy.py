@@ -25,6 +25,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
+        self.last_scored = True # if last turn attacked, record if all the scouts we sent scored
 
     def on_game_start(self, config):
         """ 
@@ -53,6 +54,32 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns = 1;
         # This is a good place to do initial setup
         self.scored_on_locations = []
+        
+    def num_scouts_from_defense_strength(self, game_state):
+        """
+        Check if the defense on the attack path is strong
+        return the number of scouts that we want to stack together
+        
+        -------
+        input:
+            game_state
+        -------
+        output:
+            expected: number of scouts we expect to spawn for attack (int)
+        """
+        spawn_loc = [14, 0] # expect all attacks to be spawned at this place
+        exptected_path = game_state.find_path_to_edge(spawn_loc, target_edge=game_state.get_target_edge(spawn_loc))
+        threat = 0 # the total number of enemy structures that can attack the scouts on the path
+        for loc in exptected_path:
+            if loc[1] >= 12: # loop over all threatening units
+                for unit in game_state.get_attackers(loc, 0):
+                    distance = game_state.distance_between_locations(loc, [unit.x, unit.y])
+                    if distance <= 3.5:
+                        discounter = unit.health / unit.max_health
+                        threat += discounter * unit.damage_i
+            else:
+                continue # skip this loc because it's on our side
+        
 
     def on_turn(self, turn_state):
         """
@@ -64,10 +91,17 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         self.complete = False
         game_state = gamelib.GameState(self.config, turn_state)
+        if self.turns == 1:
+            self.init_build(game_state)
+            game_state.submit_turn()
+            return
         self.refresh_builds(game_state)
+
+        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
+        game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
+        self.starter_strategy(game_state)
         self.turns += 1
         game_state.submit_turn()
-        return
 
     def init_build(self, state):
         """
@@ -82,7 +116,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def refresh_builds(self, state):
         sp = state.get_resource(SP)
-        queue = self.workqueue[:] #shallow copy
+        queue = self.workqueue
         while(sp >= 1):
             if(queue):
                 item = queue.pop(0)
@@ -102,10 +136,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             for item in self.workqueue:
                 if (sp < 1): break
                 if(item[0] == SUPPORT):
-                    self.attempt_upgrade(SUPPORT, item[1])
+                    state.attempt_upgrade(item[1])
                     sp -= 4
                 elif(item[0] == WALL):
-                    self.attempt_upgrade(WALL, item[1])
+                    state.attempt_upgrade(item[1])
                     sp -= 1
                     #no turret upgrades for now
         return
@@ -131,7 +165,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 gamelib.debug_write("Got scored on at: {}".format(location))
                 self.scored_on_locations.append(location)
                 gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
-
+                
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
