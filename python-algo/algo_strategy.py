@@ -62,6 +62,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
+        self.complete = False
         game_state = gamelib.GameState(self.config, turn_state)
         if self.turns == 1:
             self.init_build(game_state)
@@ -72,6 +73,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
         self.starter_strategy(game_state)
+        self.turns += 1
         game_state.submit_turn()
 
     def init_build(self, state):
