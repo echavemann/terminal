@@ -67,6 +67,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.init_build(game_state)
             game_state.submit_turn()
             return
+        self.refresh_builds(game_state)
 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
