@@ -67,6 +67,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         if self.turns == 1:
             self.init_build(game_state)
             game_state.submit_turn()
+            self.turns += 1
             return
         self.refresh_builds(game_state)
 
@@ -75,6 +76,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.starter_strategy(game_state)
         self.turns += 1
         game_state.submit_turn()
+        return
 
     def init_build(self, state):
         """
