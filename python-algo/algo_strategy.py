@@ -89,7 +89,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
-        self.complete = False
         game_state = gamelib.GameState(self.config, turn_state)
         if self.turns == 1:
             self.init_build(game_state)
@@ -107,40 +106,32 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         Builds the initial wall layout. This is the same for every game.
         """
-        wallloc = [[0, 13], [1, 13], [4, 13], [27, 13], [6, 12], [6, 11], [25, 11], [6, 10], [24, 10], [23, 9], [7, 8], [9, 8], [10, 8], [11, 8], [12, 8], [13, 8], [14, 8], [15, 8], [16, 8], [17, 8], [18, 8], [19, 8], [20, 8], [21, 8], [22, 8]]
-        state.attempt_spawn(WALL, wallloc)
-        buffloc = [[8, 7]]
-        state.attempt_spawn(SUPPORT, buffloc)
-        towerloc = [[2, 13], [3, 13], [26, 12], [5, 10], [6, 9]]
-        state.attempt_spawn(TURRET, towerloc)
+        for x in self.workqueue:
+            state.attempt_spawn(x[0], x[1])
 
     def refresh_builds(self, state):
+        self.complete = False
         sp = state.get_resource(SP)
-        queue = self.workqueue
-        while(sp >= 1):
-            if(queue):
-                item = queue.pop(0)
-                if(item[0] == WALL):
-                    state.attempt_spawn(WALL, item[1])
-                    sp -= 1
-                elif(item[0] == SUPPORT):
-                    state.attempt_spawn(SUPPORT, item[1])
-                    sp -= 4
-                elif(item[0] == TURRET):
-                    state.attempt_spawn(TURRET, item[1])
-                    sp -= 2
-            else:
-                break
+        for item in self.workqueue:
+            if sp < 1: return
+            if(item[0] == SUPPORT and sp > 4):
+                state.attempt_spawn(item[0], item[1])
+                sp -= 4
+            elif(item[0] == WALL and sp > 1):
+                state.attempt_spawn(item[0], item[1])
+                sp -= 1
+            elif(item[0] == TURRET and sp > 2):
+                state.attempt_spawn(item[0], item[1])
+                sp -= 2
         self.complete = True
-        if (sp >= 1):
-            for item in self.workqueue:
-                if (sp < 1): break
-                if(item[0] == SUPPORT):
-                    state.attempt_upgrade(item[1])
-                    sp -= 4
-                elif(item[0] == WALL):
-                    state.attempt_upgrade(item[1])
-                    sp -= 1
+        for item in self.workqueue:
+            if (sp < 1): return
+            if(item[0] == SUPPORT and sp > 4):
+                state.attempt_upgrade(item[1])
+                sp -= 4
+            elif(item[0] == WALL and sp > 1):
+                state.attempt_upgrade(item[1])
+                sp -= 1
                     #no turret upgrades for now
         return
         
