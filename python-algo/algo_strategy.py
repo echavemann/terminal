@@ -102,13 +102,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns += 1
         game_state.submit_turn()
 
-    def init_build(self, state):
-        """
-        Builds the initial wall layout. This is the same for every game.
-        """
-        for x in self.workqueue:
-            state.attempt_spawn(x[0], x[1])
-
     def refresh_builds(self, state):
         self.complete = False
         sp = state.get_resource(SP)
@@ -124,6 +117,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 state.attempt_spawn(item[0], item[1])
                 sp -= 2
         self.complete = True
+        gamelib.debug_write("refreshed builds")
+        gamelib.debug_write("now have {} sp".format(state.get_resource(SP)))
         for item in self.workqueue:
             if (sp < 1): return
             if(item[0] == SUPPORT and sp > 4):
