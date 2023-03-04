@@ -133,7 +133,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             elif(item[0] == WALL and sp > 1):
                 s = state.attempt_upgrade(item[1])
                 if (s==1) :sp -= 1
-                    #no turret upgrades for now
+            elif(item[0] == TURRET and sp > 2):
+                s = state.attempt_upgrade(item[1])
+                if (s==1) :sp -= 2
         return
         
 
