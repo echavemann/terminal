@@ -64,16 +64,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         self.complete = False
         game_state = gamelib.GameState(self.config, turn_state)
-        if self.turns == 1:
-            self.init_build(game_state)
-            game_state.submit_turn()
-            self.turns += 1
-            return
         self.refresh_builds(game_state)
-
-        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
-        game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
-        self.starter_strategy(game_state)
         self.turns += 1
         game_state.submit_turn()
         return
