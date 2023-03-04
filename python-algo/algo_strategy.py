@@ -47,11 +47,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.towerloc = [[2, 13], [3, 13], [26, 12], [5, 10], [6, 9]]
         self.workqueue = []
         rhs = [(WALL, [27,13]), (WALL, [25,11]), (WALL, [24,10]),(WALL, [23,9]),(WALL, [22,8]),(TURRET, [26,12])]
-        lhs = [(WALL, [0,13]), (WALL, [1,13]), (WALL, [4,13]), (TURRET, [2,13]),(TURRET, [3,13]), (WALL, [6,12]), (WALL, [6,11]), (WALL, [6,10]), (TURRET, [5,10]), (TURRET, [6,9]),(WALL, [1,13])]
-        mhs = [(SUPPORT, [8,7]), (WALL, [7,8]),(WALL, [9,8]), (WALL, [10,8]), (WALL, [11,8]), (WALL, [12,8]), (WALL, [13,8]), (WALL, [14,8]), (WALL, [15,8]), (WALL, [16,8]), (WALL, [17,8]),(WALL, [18,8]), (WALL, [19,8]), (WALL, [20,8]), (WALL, [21,8])]
+        lhs = [(WALL, [0,13]), (WALL, [1,13]), (WALL, [4,13]), (TURRET, [2,13]),(TURRET, [3,13]), (WALL, [6,12]), (WALL, [6,11]), (WALL, [6,10]), (TURRET, [5,10]), (TURRET, [6,9])]
+        mhs = [(SUPPORT, [8,7]), (WALL, [9,8]), ((WALL, [10,8])), (WALL, [11,8]), (WALL, [12,8]), (WALL, [13,8]), (WALL, [14,8]), (WALL, [15,8]), (WALL, [16,8]), (WALL, [17,8]), (WALL, [19,8]), (WALL, [20,8]), (WALL, [21,8])]
         self.workqueue = rhs + lhs + mhs
         self.complete = True; #is True when the wall and buff are built so we can attack
-        self.turns = 1;
+        self.turns = 1
         # This is a good place to do initial setup
         self.scored_on_locations = []
         
@@ -90,17 +90,25 @@ class AlgoStrategy(gamelib.AlgoCore):
         game engine.
         """
         game_state = gamelib.GameState(self.config, turn_state)
-        if self.turns == 1:
-            self.init_build(game_state)
-            game_state.submit_turn()
-            return
         self.refresh_builds(game_state)
 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
-        self.starter_strategy(game_state)
         self.turns += 1
+        
+        # dummy offense logic
+        # mp = game_state.MP()
+        game_state.attempt_spawn("SCOUT",[14, 0],5)
+        # gamelib.util.debug_write("attempt attack")
+        
         game_state.submit_turn()
+
+    def init_build(self, state):
+        """
+        Builds the initial wall layout. This is the same for every game.
+        """
+        for x in self.workqueue:
+            state.attempt_spawn(x[0], x[1])
 
     def refresh_builds(self, state):
         self.complete = False
@@ -117,8 +125,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                 state.attempt_spawn(item[0], item[1])
                 sp -= 2
         self.complete = True
-        gamelib.debug_write("refreshed builds")
-        gamelib.debug_write("now have {} sp".format(state.get_resource(SP)))
         for item in self.workqueue:
             if (sp < 1): return
             if(item[0] == SUPPORT and sp > 4):
