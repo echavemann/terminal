@@ -128,11 +128,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         for item in self.workqueue:
             if (sp < 1): return
             if(item[0] == SUPPORT and sp > 4):
-                state.attempt_upgrade(item[1])
-                sp -= 4
+                if state.attempt_upgrade(item[1]):
+                    sp -= 4
             elif(item[0] == WALL and sp > 1):
-                state.attempt_upgrade(item[1])
-                sp -= 1
+                if state.attempt_upgrade(item[1]):
+                    sp -= 1
                     #no turret upgrades for now
         return
         
