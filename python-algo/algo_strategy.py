@@ -47,8 +47,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.towerloc = [[2, 13], [3, 13], [26, 12], [5, 10], [6, 9]]
         self.workqueue = []
         rhs = [(WALL, [27,13]), (WALL, [25,11]), (WALL, [24,10]),(WALL, [23,9]),(WALL, [22,8]),(TURRET, [26,12])]
-        lhs = [(WALL, [0,13]), (WALL, [1,13]), (WALL, [4,13]), (TURRET, [2,13]),(TURRET, [3,13]), (WALL, [6,12]), (WALL, [6,11]), (WALL, [6,10]), (TURRET, [5,10]), (TURRET, [6,9])]
-        mhs = [(SUPPORT, [8,7]), (WALL, [9,8]), ((WALL, [10,8])), (WALL, [11,8]), (WALL, [12,8]), (WALL, [13,8]), (WALL, [14,8]), (WALL, [15,8]), (WALL, [16,8]), (WALL, [17,8]), (WALL, [19,8]), (WALL, [20,8]), (WALL, [21,8])]
+        lhs = [(WALL, [0,13]), (WALL, [1,13]), (WALL, [4,13]), (TURRET, [2,13]),(TURRET, [3,13]), (WALL, [6,12]), (WALL, [6,11]), (WALL, [6,10]), (TURRET, [5,10]), (TURRET, [6,9]),(WALL, [1,13])]
+        mhs = [(SUPPORT, [8,7]), (WALL, [7,8]),(WALL, [9,8]), (WALL, [10,8]), (WALL, [11,8]), (WALL, [12,8]), (WALL, [13,8]), (WALL, [14,8]), (WALL, [15,8]), (WALL, [16,8]), (WALL, [17,8]),(WALL, [18,8]), (WALL, [19,8]), (WALL, [20,8]), (WALL, [21,8])]
         self.workqueue = rhs + lhs + mhs
         self.complete = True; #is True when the wall and buff are built so we can attack
         self.turns = 1;
