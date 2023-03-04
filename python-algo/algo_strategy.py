@@ -89,7 +89,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def refresh_builds(self, state):
         sp = state.get_resource(SP)
-        queue = self.workqueue
+        queue = self.workqueue[:] #shallow copy
         while(sp >= 1):
             if(queue):
                 item = queue.pop(0)
