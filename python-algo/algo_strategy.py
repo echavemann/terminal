@@ -45,11 +45,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.buffloc = [[8, 7]]
         self.towerloc = [[2, 13], [3, 13], [26, 12], [5, 10], [6, 9]]
         self.workqueue = []
-        self.workqueue.append(WALL, [0,13])
         rhs = [(WALL, [27,13]), (WALL, [25,11]), (WALL, [24,10]),(WALL, [23,9]),(WALL, [22,8]),(TURRET, [26,12])]
         lhs = [(WALL, [0,13]), (WALL, [1,13]), (WALL, [4,13]), (TURRET, [2,13]),(TURRET, [3,13]), (WALL, [6,12]), (WALL, [6,11]), (WALL, [6,10]), (TURRET, [5,10]), (TURRET, [6,9])]
         mhs = [(SUPPORT, [8,7]), (WALL, [9,8]), ((WALL, [10,8])), (WALL, [11,8]), (WALL, [12,8]), (WALL, [13,8]), (WALL, [14,8]), (WALL, [15,8]), (WALL, [16,8]), (WALL, [17,8]), (WALL, [19,8]), (WALL, [20,8]), (WALL, [21,8])]
-        self.complete = rhs + lhs + mhs
+        self.workqueue = rhs + lhs + mhs
         self.complete = True; #is True when the wall and buff are built so we can attack
         self.turns = 1;
         # This is a good place to do initial setup
@@ -65,7 +64,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         if self.turns == 1:
-            self.init_build(self, turn_state)
+            self.init_build(game_state)
             game_state.submit_turn()
             return
 
