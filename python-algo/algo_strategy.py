@@ -97,8 +97,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns += 1
         
         # dummy offense logic
-        # mp = game_state.MP()
-        game_state.attempt_spawn(SCOUT,[14, 0],5)
+        mp = game_state.get_resource(1,0)
+        game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
         # gamelib.util.debug_write("attempt attack")
         
         game_state.submit_turn()
