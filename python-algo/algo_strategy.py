@@ -54,6 +54,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns = 1
         # This is a good place to do initial setup
         self.scored_on_locations = []
+        self.last_sent = 0
+        self.last_scored = 0
+        self.enemyhealth = 0 # the enemy health at n-1 of the turn
         
     def num_scouts_from_defense_strength(self, game_state):
         """
@@ -90,6 +93,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         game engine.
         """
         game_state = gamelib.GameState(self.config, turn_state)
+        self.last_scored = self.enemy_health - game_state.enemy_health
+        self.enemy_health = game_state.enemy_health
+
+        if self.turns == 1 or (self.last_scored == self.last_sent):
+        # go ham
+            mp = game_state.get_resource(1,0)
+            game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
         self.refresh_builds(game_state)
 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
@@ -98,8 +108,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         
         # dummy offense logic
         mp = game_state.get_resource(1,0)
-        if mp > 15:
+        if mp > 18:
             game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
+        self.last_sent = int(mp)
         # gamelib.util.debug_write("attempt attack")
         
         game_state.submit_turn()
