@@ -25,7 +25,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
-        self.last_scored = True # if last turn attacked, record if all the scouts we sent scored
+        self.last_scored = 42 # if last turn attacked, record if all the scouts we sent scored
 
     def on_game_start(self, config):
         """ 
@@ -56,7 +56,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.scored_on_locations = []
         self.last_sent = 0
         self.last_scored = 0
-        self.enemyhealth = 0 # the enemy health at n-1 of the turn
+        self.enemy_health = 30 # the enemy health at n-1 of the turn
         
     def num_scouts_from_defense_strength(self, game_state):
         """
@@ -96,22 +96,28 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.last_scored = self.enemy_health - game_state.enemy_health
         self.enemy_health = game_state.enemy_health
 
-        if self.turns == 1 or (self.last_scored == self.last_sent):
+        if self.turns == 1:
         # go ham
             mp = game_state.get_resource(1,0)
             game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
+        elif self.last_scored == self.last_sent:
+            mp = game_state.get_resource(1,0)
+            game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
+        else:
+            # econ and rush
+            mp = game_state.get_resource(1,0)
+            if mp > 18:
+                game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
+        self.last_sent = int(mp)
+            
+            
         self.refresh_builds(game_state)
 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
         self.turns += 1
         
-        # dummy offense logic
-        mp = game_state.get_resource(1,0)
-        if mp > 18:
-            game_state.attempt_spawn(SCOUT,[14, 0],int(mp))
-        self.last_sent = int(mp)
-        # gamelib.util.debug_write("attempt attack")
+        
         
         game_state.submit_turn()
 
