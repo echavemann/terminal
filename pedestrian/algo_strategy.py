@@ -31,28 +31,26 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.defense_queue = [] # a priority queue for building defense strcutures
         self.upgrade_queue = [] # a priority queue for upgrading defense structures
         self.reserved_sp = 0 # int that tracks the number of sp reserved for walls for demolishers
+        self.spawn_loc = {"attack_right":[13, 0], "attack_left":[14, 0]} # the location where scouts are spawned
         self.defense_priority = { # dictionary that maps unit to priority, see bottom for more info
-            'init_wall': 3,
             'init_turret': 1,
             'init_ctr_wall': 2,
+            'init_wall': 3,
             'extra_turret': 4,
-            'extra_wall': 4
-        }
-        self.defense_build_cost = { # dictionary that maps unit to cost
-            'wall': 0.5,
-            'support': 4,
-            'turret': 6,
-        }
-        self.defense_upgrade_cost = { # dictionary that maps upgrades to cost
-            'wall': 1.5,
-            'support': 2,
-            'turret': 6,
+            'extra_wall': 5
         }
         self.upgrade_priority = { # dictionary that maps upgrades to priority, see bottom for more info
-            'init_wall': 6,
             'init_turret': 5,
+            'init_wall': 6,
             'extra_turret': 7
         }
+
+        self.extra_wall_locs = [(5,13), (5,12), (22,12), (22,13)] 
+        self.side_wall_loc = [range(0, 5), range(23, 28)] 
+        self.mid_wall_loc = [[9], [18], [13, 14]]
+        self.turret_loc = [(3, 12),(24, 12),(13, 10),(9, 10),(18, 10)]
+        self.walls_by_turret = [9, 13, 14, 18]
+        
 
     def on_game_start(self, config):
         """ 
@@ -83,9 +81,64 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
         self.refresh_defense(game_state)
         self.build_defense(game_state)
+        strat = self.get_attack_side(game_state)
+        if strat:
+            side, mode = strat
+            self.spawn_attack(side, mode, game_state)
         game_state.submit_turn()
         self.turns += 1
 
+    ##################################################################################
+    """
+    offense functions
+    """
+
+    def check_defense_strength(self, state, spawn_loc):
+        """
+        check the strength of the defense structures
+        """
+        exptected_path = state.find_path_to_edge(spawn_loc, target_edge = state.get_target_edge(spawn_loc))
+        threat = 0 # the total number of enemy structures that can attack the scouts on the path
+        for loc in exptected_path:
+            if loc[1] >= 12: # loop over all threatening units
+                for unit in state.get_attackers(loc, 0):
+                    distance = ((loc[0]-unit.x)**2+(loc[1]-unit.y)**2)**0.5
+                    if distance <= 3.5:
+                        discounter = unit.health / unit.max_health
+                        threat += discounter * unit.damage_i
+            else:
+                continue # skip this loc because it's on our side
+        return threat
+    
+    def get_attack_side(self, state):
+        """
+        organize the attack based on the strength of the defense
+        """
+        left_threat = self.check_defense_strength(state, self.spawn_loc['attack_left'])
+        right_threat = self.check_defense_strength(state, self.spawn_loc['attack_right'])
+
+        mp = state.get_resource(MP)
+        if mp >= 5: 
+            if left_threat > right_threat: # if left side is stronger, attack right
+                side = 'attack_right' 
+            else:
+                side = 'attack_left'
+            if left_threat < 20 or right_threat < 20: # if weak side exist, spam scouts
+                mode = 'scout'
+            elif mp > 10: # if we have enough mp, use demolishers and scouts
+                """ do the demolisher attack"""
+                mode = "demolisher"
+            else:
+                return None
+        else:
+            return None
+        return [side, mode]
+    
+    def spawn_attack(self, side, mode, state):
+        if mode == 'scout':
+            spawn_loc = self.spawn_loc[side]
+            state.attempt_spawn(SCOUT, spawn_loc, int(state.get_resource(MP)))
+    
     ##################################################################################
     """
     defense functions
@@ -97,80 +150,76 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         self.defense_queue = []
 
-        # check if the initial defense structures are destroyed or not built, if so, add them back to the queue
-        for turret_loc in [(3, 12),(24, 12),(13, 10),(9, 10),(18, 10)]: # check turrets
-            if not state.contains_stationary_unit(turret_loc):
-                pq.heappush(self.defense_queue, (self.defense_priority['init_turret'], [turret_loc, TURRET]))
-        for walls in [range(0, 5), range(23, 28)]: # check walls on the left and right
-            for wall_loc in walls:
-                if not state.contains_stationary_unit((wall_loc, 13)):
-                    priority = self.defense_priority['init_wall']
-                    if wall_loc in [9, 13, 14, 18]: # walls that are right in front of main turrets
-                        priority = self.defense_priority['init_ctr_wall']
-                    pq.heappush(self.defense_queue, (priority, [(wall_loc, 13), WALL]))
-        for walls in [range(12, 16), range(8, 11), range(17, 20)]: # check walls in the middle
-            for wall_loc in walls:
-                if not state.contains_stationary_unit((wall_loc, 11)):
-                    priority = self.defense_priority['init_wall']
-                    if wall_loc in [9, 13, 14, 18]: # walls that are right in front of main turrets
-                        priority = self.defense_priority['init_ctr_wall']
-                    pq.heappush(self.defense_queue, (priority, [(wall_loc, 11), WALL]))  
+        # init turrets
+        for turret_loc in self.turret_loc: # check turrets
+            pq.heappush(self.defense_queue, (self.defense_priority['init_turret'], [turret_loc, TURRET]))
 
-        for extra_wall_loc in [(5,13), (5,12), (22,12), (22,13)]:
-            if not state.contains_stationary_unit(extra_wall_loc):
-                priority = self.defense_priority['extra_wall']
-                pq.heappush(self.defense_queue, (priority, [extra_wall_loc, WALL]))
+        for extra_wall_loc in self.extra_wall_locs:
+            priority = self.defense_priority['init_wall']
+            pq.heappush(self.defense_queue, (priority, [extra_wall_loc, WALL]))
 
-        # check if the extra turrets are destroyed or not built, if so, add them back to the queue
+        for walls in self.side_wall_loc: # check walls on the left and right
+            for wall_loc in walls:
+                priority = self.defense_priority['init_wall']
+                if wall_loc in self.walls_by_turret: # walls that are right in front of main turrets
+                    priority = self.defense_priority['init_ctr_wall']
+                pq.heappush(self.defense_queue, (priority, [(wall_loc, 13), WALL]))
+
+        # init and ctr walls
+        for walls in self.mid_wall_loc: # check walls in the middle
+            for wall_loc in walls:
+                priority = self.defense_priority['init_wall']
+                if wall_loc in [9, 13, 14, 18]: # walls that are right in front of main turrets
+                    priority = self.defense_priority['init_ctr_wall']
+                pq.heappush(self.defense_queue, (priority, [(wall_loc, 11), WALL]))  
+
+        # extra turrets
         for turret_loc in [(4,12),(23,12),(14,10)]:
             if not state.contains_stationary_unit(turret_loc):
                 priority = self.defense_priority['extra_turret']
                 pq.heappush(self.defense_queue, (priority, [turret_loc, TURRET]))
 
+        gamelib.debug_write(len(self.defense_queue))
         # # check for wall upgrades, if not upgraded, add upgrades to the queue
-        # for walls in [range(0, 5), range(23, 28)]: # check if the center walls are upgraded
+        # for walls in [range(0, 5), range(23, 28)]:
         #     for wall_loc in walls:
-        #         unit = state.contains_stationary_unit((wall_loc, 13))
+        #         wall_loc = [wall_loc, 13]
+        #         unit = state.contains_stationary_unit(wall_loc)
         #         if unit and unit.upgraded == False:
-        #             pq.heappush(self.upgrade_queue, (self.upgrade_priority['init_wall'], (wall_loc, 13))) 
+        #             pq.heappush(self.upgrade_queue, (self.upgrade_priority['init_wall'], [wall_loc, unit])) 
     
     def build_defense(self, state):
         """
         read in the defense queue and build defense by priority
         this func will always reserve sp for buildings walls for demolishers
-        """
-        sp = state.get_resource(SP)
-        reserved_sp = 0
-        if self.turns != 1: # if it is not the first turn, reserve sp for walls for demolishers
-            reserved_sp = self.reserved_sp
-
-        while self.defense_queue and sp >= reserved_sp:
+        """        
+        # build defense structures
+        while self.defense_queue:
             _, (loc, unit) = pq.heappop(self.defense_queue)
-            if sp - state.type_cost(unit)[SP] >= reserved_sp:
-                spawned = state.attempt_spawn(unit, loc)
-                if spawned:
-                    sp -= state.type_cost(unit)[SP]
+            state.attempt_spawn(unit, loc)
 
-        # while self.upgrade_queue and sp > reserved_sp:
-        #     _, loc = pq.heappop(self.upgrade_queue)
-        #     upgraded = state.attempt_upgrade(loc)
-            # if upgraded:
-            #     sp -= state.type_cost(upgrade)[SP]
+        gamelib.util.debug_write(self.upgrade_queue)
+        # upgrade defense structures
+        # while self.upgrade_queue:
+        #     _, (loc, unit) = pq.heappop(self.upgrade_queue)
+        #     state.attempt_upgrade(loc)
 
 ######################################################################################
 """
-defense priorities:
+Defense priorities:
     init_turrets > init_walls > init_center_wall_upgrade > extra_turrets > 
 
+Note: smaller number means higher priority
     Unit           Priority    Comments
- init turrets      (15)        # the 5 initial turrets
- init ctr walls    (14)        # the initial walls right front of the turrets 
- init walls        (10)        # other initial walls 
- extra turrets     (13)        # the bonus turrets
- support           (20)        # supports are usually not build until we start attacking
+ init turrets      (1)        # the 5 initial turrets
+ init ctr walls    (2)        # the initial walls right front of the turrets 
+ init walls        (3)        # other initial walls 
+ extra turrets     (4)        # the bonus turrets
+
+ support           (0)        # supports are usually not build until we start attacking
 
     Upgrade      Priority    Comments
-1. turrets       (10)        # turrets are op
+1. turrets        (10)        # turrets are op
 """
 
 if __name__ == "__main__":
