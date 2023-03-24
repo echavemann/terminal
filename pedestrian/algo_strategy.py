@@ -30,8 +30,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns = 1 # int that tracks turn number
         self.defense_queue = [] # a priority queue for building defense strcutures
         self.upgrade_queue = [] # a priority queue for upgrading defense structures
-        self.reserved_sp = 0 # int that tracks the number of sp reserved for walls for demolishers
-        self.spawn_loc = {"attack_right":[13, 0], "attack_left":[14, 0]} # the location where scouts are spawned
+        self.spawn_locs = [[4, 9], [7, 6], [11, 2], [16, 2], [20, 6], [23, 9]] # the location where attacks are spawned
         self.defense_priority = { # dictionary that maps unit to priority, see bottom for more info
             'init_turret': 1,
             'init_ctr_wall': 2,
@@ -44,12 +43,62 @@ class AlgoStrategy(gamelib.AlgoCore):
             'init_wall': 6,
             'extra_turret': 7
         }
-
         self.extra_wall_locs = [(5,13), (5,12), (22,12), (22,13)] 
         self.side_wall_loc = [range(0, 5), range(23, 28)] 
         self.mid_wall_loc = [[9], [18], [13, 14]]
         self.turret_loc = [(3, 12),(24, 12),(13, 10),(9, 10),(18, 10)]
         self.walls_by_turret = [9, 13, 14, 18]
+        self.blocks = list(range(1, 39))
+
+        self.block_locs = [
+            [[4, 17], [5, 17], [4, 16], [5, 16]], # 1
+            [[4, 14], [5, 14], [4, 15], [5, 15]], # 2
+
+            [[6, 19], [7, 19], [6, 18], [7, 18]], # 3
+            [[6, 17], [7, 17], [6, 16], [7, 16]], # 4
+            [[6, 14], [7, 14], [6, 15], [7, 15]], # 5
+
+            [[8, 21], [9, 21], [8, 20], [9, 20]], # 6
+            [[8, 19], [9, 19], [8, 18], [9, 18]], # 7
+            [[8, 17], [9, 17], [8, 16], [9, 16]], # 8
+            [[8, 14], [9, 14], [8, 15], [9, 15]], # 9
+
+            [[10, 22], [11, 22], [10, 23], [11, 23]], # 10
+            [[10, 20], [11, 20], [10, 21], [11, 21]], # 11
+            [[10, 18], [11, 18], [10, 19], [11, 19]], # 12
+            [[10, 16], [11, 16], [10, 17], [11, 17]], # 13
+            [[10, 14], [11, 14], [10, 15], [11, 15]], # 14
+
+            [[12, 22], [13, 22], [12, 23], [13, 23]], # 15
+            [[12, 20], [13, 20], [12, 21], [13, 21]], # 16
+            [[12, 18], [13, 18], [12, 19], [13, 19]], # 17
+            [[12, 16], [13, 16], [12, 17], [13, 17]], # 18
+            [[12, 14], [13, 14], [12, 15], [13, 15]], # 19
+
+            [[14, 22], [15, 22], [14, 23], [15, 23]], # 20
+            [[14, 20], [15, 20], [14, 21], [15, 21]], # 21
+            [[14, 18], [15, 18], [14, 19], [15, 19]], # 22
+            [[14, 16], [15, 16], [14, 17], [15, 17]], # 23
+            [[14, 14], [15, 14], [14, 15], [15, 15]], # 24
+
+            [[16, 22], [17, 22], [16, 23], [17, 23]], # 25
+            [[16, 20], [17, 20], [16, 21], [17, 21]], # 26
+            [[16, 18], [17, 18], [16, 19], [17, 19]], # 27
+            [[16, 16], [17, 16], [16, 17], [17, 17]], # 28
+            [[16, 14], [17, 14], [16, 15], [17, 15]], # 29
+
+            [[18, 21], [19, 21], [18, 20], [19, 20]], # 30
+            [[18, 19], [19, 19], [18, 18], [19, 18]], # 31
+            [[18, 17], [19, 17], [18, 16], [19, 16]], # 32
+            [[18, 14], [19, 14], [18, 15], [19, 15]], # 33
+
+            [[20, 19], [21, 19], [20, 18], [21, 18]], # 34
+            [[20, 17], [21, 17], [20, 16], [21, 16]], # 35
+            [[20, 14], [21, 14], [20, 15], [21, 15]], # 36
+
+            [[22, 17], [23, 17], [22, 16], [23, 16]], # 37
+            [[22, 14], [23, 14], [22, 15], [23, 15]], # 38
+        ]
         
 
     def on_game_start(self, config):
@@ -81,17 +130,32 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
         self.refresh_defense(game_state)
         self.build_defense(game_state)
-        strat = self.get_attack_side(game_state)
-        if strat:
-            side, mode = strat
-            self.spawn_attack(side, mode, game_state)
+        self.handle_attack(game_state)
         game_state.submit_turn()
         self.turns += 1
+    
+    def scan_threats(self, game_state):
+        """
+        scan the map for threats, update the threat blocks every turn
+        """
+
+        for i in range(len(self.blocks)):
+            block = self.blocks[i]
 
     ##################################################################################
     """
     offense functions
     """
+    def handle_attack(self, state):
+        """
+        check if we need to spawn an attack and spawn it
+        """
+        loc, threat = self.get_attack_loc(state)
+        if threat < 100:
+            mode = 'scout'
+            self.spawn_attack(loc, mode, state)
+        else:
+            gamelib.debug_write('Threat too high, not spawning attack')
 
     def check_defense_strength(self, state, spawn_loc):
         """
@@ -110,34 +174,22 @@ class AlgoStrategy(gamelib.AlgoCore):
                 continue # skip this loc because it's on our side
         return threat
     
-    def get_attack_side(self, state):
+    def get_attack_loc(self, state):
         """
-        organize the attack based on the strength of the defense
+        check all possible spawn locations and return the one with the lowest threat
         """
-        left_threat = self.check_defense_strength(state, self.spawn_loc['attack_left'])
-        right_threat = self.check_defense_strength(state, self.spawn_loc['attack_right'])
-
-        mp = state.get_resource(MP)
-        if mp >= 5: 
-            if left_threat > right_threat: # if left side is stronger, attack right
-                side = 'attack_right' 
-            else:
-                side = 'attack_left'
-            if left_threat < 20 or right_threat < 20: # if weak side exist, spam scouts
-                mode = 'scout'
-            elif mp > 10: # if we have enough mp, use demolishers and scouts
-                """ do the demolisher attack"""
-                mode = "demolisher"
-            else:
-                return None
-        else:
-            return None
-        return [side, mode]
+        threats = [math.inf] * len(self.spawn_locs)
+        for i in range(len(self.spawn_locs)):
+            loc = self.spawn_locs[i]
+            threats[i] = self.check_defense_strength(state, loc)
+        # find the index that has lowest threat, set attack_loc accordingly
+        min_threat = min(threats)
+        min_threat_index = threats.index(min_threat)
+        return (self.spawn_locs[min_threat_index], min_threat)
     
-    def spawn_attack(self, side, mode, state):
+    def spawn_attack(self, loc, mode, state):
         if mode == 'scout':
-            spawn_loc = self.spawn_loc[side]
-            state.attempt_spawn(SCOUT, spawn_loc, int(state.get_resource(MP)))
+            state.attempt_spawn(SCOUT, loc, int(state.get_resource(MP)))
     
     ##################################################################################
     """
@@ -179,14 +231,13 @@ class AlgoStrategy(gamelib.AlgoCore):
                 priority = self.defense_priority['extra_turret']
                 pq.heappush(self.defense_queue, (priority, [turret_loc, TURRET]))
 
-        gamelib.debug_write(len(self.defense_queue))
-        # # check for wall upgrades, if not upgraded, add upgrades to the queue
-        # for walls in [range(0, 5), range(23, 28)]:
-        #     for wall_loc in walls:
-        #         wall_loc = [wall_loc, 13]
-        #         unit = state.contains_stationary_unit(wall_loc)
-        #         if unit and unit.upgraded == False:
-        #             pq.heappush(self.upgrade_queue, (self.upgrade_priority['init_wall'], [wall_loc, unit])) 
+        # check for wall upgrades, if not upgraded, add upgrades to the queue
+        for walls in [range(0, 5), range(23, 28)]:
+            for wall_loc in walls:
+                wall_loc = [wall_loc, 13]
+                unit = state.contains_stationary_unit(wall_loc)
+                if unit and unit.upgraded == False:
+                    pq.heappush(self.upgrade_queue, (self.upgrade_priority['init_wall'], [wall_loc, unit])) 
     
     def build_defense(self, state):
         """
@@ -198,11 +249,11 @@ class AlgoStrategy(gamelib.AlgoCore):
             _, (loc, unit) = pq.heappop(self.defense_queue)
             state.attempt_spawn(unit, loc)
 
-        gamelib.util.debug_write(self.upgrade_queue)
         # upgrade defense structures
-        # while self.upgrade_queue:
-        #     _, (loc, unit) = pq.heappop(self.upgrade_queue)
-        #     state.attempt_upgrade(loc)
+        while self.upgrade_queue:
+            if state.get_resource(SP) < 5:
+                _, (loc, unit) = pq.heappop(self.upgrade_queue)
+                state.attempt_upgrade(loc)
 
 ######################################################################################
 """
