@@ -5,6 +5,7 @@ import warnings
 from sys import maxsize
 import json
 import heapq as pq # priority queue
+import time
 
 
 """
@@ -138,6 +139,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
+
+        start = time.time()
+        
+        
         game_state = gamelib.GameState(self.config, turn_state)
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
@@ -146,6 +151,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.build_defense(game_state)
         game_state.submit_turn()
         self.turns += 1
+        
+        end = time.time()
+        gamelib.debug_write((end - start))
     
     ##################################################################################
     """
@@ -157,7 +165,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         scan the map for defense strength, update the block_threats every turn
         """
         for i in range(len(self.blocks)):
-            block = self.blocks[i]
+            block = self.block_locs[i]
             threat = 0
             for loc in block:
                 unit = state.contains_stationary_unit(loc)
@@ -182,8 +190,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.scan_threats(state)
         threats = [math.inf]*len(self.spawn_locs)
         for i in range(len(self.spawn_locs)):
-            spawn_loc = self.spawn_locs[i]
-            threats[i] = self.check_defense_strength(spawn_loc)
+            threats[i] = self.check_defense_strength(i)
         min_threat = min(threats)
         return (threats.index(min_threat), min_threat)
     
@@ -201,14 +208,16 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.spawn_attack(loc, 'scout', state)
         elif mp >= 12 and threat <= 12: # two turret, demolishers with scouts
             self.spawn_attack(loc, 'demolisher', state)
-        # elif mp >= 14 and threat > 12:  # demolishers with walls
-        #     sp = state.get_resource(SP)
-        #     if sp >= 3:
+        elif mp >= 14 and threat > 12:  # demolishers with walls
+            sp = state.get_resource(SP)
+            if sp >= 3:
+                gamelib.debug_write(f"demolisher with walls")
         #         self.spawn_attack(loc, 'demolisher_with_wall', state)
         #     else:
         #         attack = False
         else:
             need_support = False
+        
         if need_support: # build support for attacks when high threat
             loc = (13, 9)
             pq.heappush(self.defense_queue, (0, [loc, SUPPORT]))
@@ -217,10 +226,12 @@ class AlgoStrategy(gamelib.AlgoCore):
     
     def spawn_attack(self, loc, mode, state):
         if mode == 'scout':
-            state.attempt_spawn(SCOUT, loc, int(state.get_resource(MP)))
+            state.attempt_spawn(SCOUT, self.spawn_locs[loc], int(state.get_resource(MP)))
+            gamelib.debug_write(f"spam scouts")
         elif mode == 'demolisher':
-            state.attempt_spawn(DEMOLISHER, loc, 2)
-            state.attempt_spawn(SCOUT, loc, int(state.get_resource(MP)))
+            state.attempt_spawn(DEMOLISHER, self.spawn_locs[loc], 2)
+            state.attempt_spawn(SCOUT, self.spawn_locs[loc], int(state.get_resource(MP)))
+            gamelib.debug_write(f"demolisher and scouts")
     
     ##################################################################################
     """
