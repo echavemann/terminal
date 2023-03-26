@@ -59,7 +59,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemy_left_side = [[0, 13], [1, 13], [2, 13], [3, 13], [4, 13], [5, 13], [6, 13], [7, 13], [1, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [2, 11], [3, 11], [4, 11], [5, 11], [6, 11], [7, 11], [3, 10], [4, 10], [5, 10], [6, 10], [7, 10], [4, 9], [5, 9], [6, 9], [7, 9], [5, 8], [6, 8], [7, 8], [6, 7], [7, 7], [7, 6]]
         self.enemy_right_side = [[20, 13], [21, 13], [22, 13], [23, 13], [24, 13], [25, 13], [26, 13], [27, 13], [20, 12], [21, 12], [22, 12], [23, 12], [24, 12], [25, 12], [26, 12], [20, 11], [21, 11], [22, 11], [23, 11], [24, 11], [25, 11], [20, 10], [21, 10], [22, 10], [23, 10], [24, 10], [20, 9], [21, 9], [22, 9], [23, 9], [20, 8], [21, 8], [22, 8], [20, 7], [21, 7], [20, 6]]
         self.enemysides = [self.enemy_left_side, self.enemy_right_side]
-        self.good = False
+        self.good = True
         self.ehp = 30
         self.defended = False
         self.damage_taken = 0
@@ -152,7 +152,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         #TODO: optimize this parameter
         acceptance_param = (game_state.turn_number//10)
-        if (score) > acceptance_param:
+        if (score) >= acceptance_param:
             self.good = True
         else:
             self.good = False
