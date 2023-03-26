@@ -85,7 +85,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.run_it(game_state)
         
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
-        gamelib.debug_write('Turn state is {}'.format(turn_state))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         game_state.submit_turn()
@@ -101,7 +100,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
             count = max(1, count)
-            gamelib.debug_write('side: {}, count: {}'.format(side, count))
             if mp >= count * 3 + 1: # if have enough mp for spawning scouts and demolishers
                 game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count)
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[side], int(mp))
@@ -183,7 +181,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 enemy_mp_spent += 1
             for demolisher in demolishers:
                 enemy_mp_spent += 3
-            if enemy_mp_spent > 10:
+            if enemy_mp_spent >6:
                 self.enemy_attack_thresholds.append(enemy_mp_spent)
             
             
@@ -257,8 +255,11 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
+        gamelib.debug_write("checking mp")
+
         if len(self.enemy_attack_thresholds) >= 1:
             threshold = sum(self.enemy_attack_thresholds)/len(self.enemy_attack_thresholds)
+            gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
         if threshold <= game_state.get_resource(MP, 1):
