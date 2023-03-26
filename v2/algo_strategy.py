@@ -60,7 +60,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemy_right_side = [[20, 13], [21, 13], [22, 13], [23, 13], [24, 13], [25, 13], [26, 13], [27, 13], [20, 12], [21, 12], [22, 12], [23, 12], [24, 12], [25, 12], [26, 12], [20, 11], [21, 11], [22, 11], [23, 11], [24, 11], [25, 11], [20, 10], [21, 10], [22, 10], [23, 10], [24, 10], [20, 9], [21, 9], [22, 9], [23, 9], [20, 8], [21, 8], [22, 8], [20, 7], [21, 7], [20, 6]]
         self.enemysides = [self.enemy_left_side, self.enemy_right_side]
         self.score = []
-        self.expectation = []
+        self.expectation = [0]
         self.ehp = 30
     
     def on_turn(self, turn_state):
@@ -135,11 +135,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         #insert attack logic here lmao
 
     def attack_v2(self, game_state:gamelib.GameState):
-        if self.turns == 1:
-            #we have base behavior. 
-            #TODO determine this - probably just some interceptors
-            self.expectation.append(0)
-            return
         self.score.append(self.ehp - game_state.enemy_health)
         #writeback
         self.ehp = game_state.enemy_health
