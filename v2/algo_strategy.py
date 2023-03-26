@@ -49,7 +49,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                           # attack enemy right  attack enemy left
         self.spawn_locs =  [[13,0], [14, 0]]
         self.equivalent_locs = self.spawn_locs
-        self.best_side = 0 # 0 is we are attacking enemy left and picking right side, 1 is we are attacking enemy right and picking left side
+        self.best_side = 0
+        self.movement_tracks = {0: 0, 1: 0} # 0 if left, 1 if right
     
     def on_turn(self, turn_state):
         """
@@ -63,6 +64,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns += 1
         self.sp = game_state.get_resource(SP)
         self.mp = game_state.get_resource(MP)
+
+        self.fortside = max(self.movement_tracks, key=self.movement_tracks.get)
+        
         if self.turns == 1: 
             self.build_initial(game_state)
             game_state.submit_turn()
@@ -98,6 +102,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         state = json.loads(turn_string)
         events = state["events"]
         breaches = events["breach"]
+        moves = events["move"]
         for breach in breaches:
             location = breach[0]
             unit_owner_self = True if breach[4] == 1 else False
@@ -105,6 +110,16 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
+        for move in moves:
+            x, y = move[1]
+            unit_owner_self = True if move[5] == 1 else False
+            if y <= 15 and not unit_owner_self:
+                if x < 14:
+                    self.movement_tracks[0] += 1
+                else:
+                    self.movement_tracks[1] += 1
+            
+            
     ### ------------------- Turn Functions ------------------- ###
 
     
