@@ -101,6 +101,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             threats[side] = threat
         min_threat = min(threats)
         self.best_side = threats.index(min_threat)
+        gamelib.debug_write("best side is {}".format(self.best_side))
 
     def on_action_frame(self, turn_string):
         """
