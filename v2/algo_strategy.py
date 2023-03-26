@@ -118,6 +118,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                     side = not self.enemysides.index(side)
                     self.enemy_weak_side = [side, attacker_count]
                     self.best_side = side
+                    gamelib.debug_write('weak side: {}, has {} turrets'.format(self.enemy_weak_side, attacker_count))
                 
     def on_action_frame(self, turn_string):
         """
