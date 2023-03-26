@@ -131,10 +131,29 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_left(game_state)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
-        if (s==1) : self.sp -= 6
+        #Fortify a side. 
+        #LHS Turret
+        s = game_state.attempt_spawn(TURRET, [5, 10], 1)
+        #RHS Wall Upgrades
+        L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13]]
+        for loca in L1wallsRHS:
+            game_state.attempt_upgrade(loca)
+        game_state.attempt_spawn(SUPPORT, [13, 5], 1)
+        #RHS Turret
+        s = game_state.attempt_spawn(TURRET, [22, 10], 1)
+        #LHS Wall Upgrades
+        L1wallsLHS = [[0,13],[1,13],[2,12],[4,12]]
+        for loca in L1wallsLHS:
+            game_state.attempt_upgrade(loca)
+        #RHS Wall Upgrades
+        L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13],[21,10]]
+        for loca in L1wallsRHS:
+            game_state.attempt_upgrade(loca)
+        game_state.attempt_spawn(SUPPORT, [13, 5], 1)
+
         rhs = [[26,13],[27,13],[20, 8],[20,9],[21,10],[22,11],[23,12]]
-        wall_upgrades = [[0, 13], [1,13],[2,12],[7,8],]# do wall upgrades
-        wall_upgrades += rhs
+        lhs = [[0, 13], [1,13],[2,12],[7,8],]# do wall upgrades 
+        wall_upgrades = rhs + lhs
         for loca in wall_upgrades:
             game_state.attempt_upgrade(loca)
             if (s==1) : self.sp -= 1.5
@@ -204,8 +223,9 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_supports(self, game_state):
         """Greedily build supports."""
         L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
-        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4], [17, 4], [10, 4]]
+        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4]]
         L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
+        L4 = [[13, 2], [14, 2]]
         for loca in L1:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
