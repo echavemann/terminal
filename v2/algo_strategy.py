@@ -42,9 +42,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         MP = 1
         SP = 0
         self.defense_queue = []
+        self.enemy_interceptors = []
         self.scored_on_locations = []
         self.turns = 0
-        self.side_walls = [[3, 11], [24, 11]]
+        self.sup_count = 0
+        self.side_walls = [[5, 8], [22, 8]]
         self.last_turn = math.inf
         self.fight_beta = False
                           # attack enemy right  attack enemy left
@@ -67,11 +69,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         self.turns += 1
+        self.min_threat = math.inf
         self.enemy_weak_side = False
         self.sp = game_state.get_resource(SP)
         self.mp = game_state.get_resource(MP)
         self.scan_side(game_state)
-
+        self.paths = []
         self.fortside = max(self.movement_tracks, key=self.movement_tracks.get)
         
         if self.turns == 1: 
@@ -91,8 +94,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         mp = game_state.get_resource(MP)
         if not self.enemy_weak_side:
-            if mp > 8:
-                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+            # regular attack logic
+            self.regular_attack(game_state)
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
             count = max(1, count)
@@ -100,6 +103,27 @@ class AlgoStrategy(gamelib.AlgoCore):
             if mp >= count * 3 + 1: # if have enough mp for spawning scouts and demolishers
                 game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count)
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[side], int(mp))
+                
+    def regular_attack(self, game_state):
+        """
+        regular attack logic
+        """
+        mp = game_state.get_resource(MP)
+        if self.demolisher_required < 3:
+            if mp > 8:
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        elif mp >= 3*self.demolisher_required + 3:
+            game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], self.demolisher_required)
+            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        
+    def scan_and_attack(self, game_state):
+        """
+        scans for enemy units and attacks them
+        """
+        mp = game_state.get_resource(MP)
+        if mp >= 3:
+            game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], 1)
+            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
         
     def run_it(self, turn_state):
         self.build_defense(turn_state)
@@ -115,7 +139,10 @@ class AlgoStrategy(gamelib.AlgoCore):
                 for loc in side:
                     unit = game_state.contains_stationary_unit(loc)
                     if unit and unit.damage_i > 0:
-                        attacker_count += 1
+                        if unit.upgraded:
+                            break
+                        else:
+                            attacker_count += 1
                 if attacker_count <= 1:
                     side = not self.enemysides.index(side)
                     self.enemy_weak_side = [side, attacker_count]
@@ -149,8 +176,17 @@ class AlgoStrategy(gamelib.AlgoCore):
                     self.movement_tracks[0] += 1
                 else:
                     self.movement_tracks[1] += 1
-        if state['turnInfo']['turnNumber'] != self.last_turn:
-            self.last_turn = state['turnInfo']['turnNumber']
+        # if state['turnInfo'][1] != self.last_turn: # everyturn scan if enemy spam intercepters
+        #     self.last_turn = state['turnInfo'][1] # update turn number
+        #     intercepter_count = len(state['p2Units'][5])  # count number of intercepters spawned
+        #     self.enemy_interceptors.append(intercepter_count)
+        #     if mean(self.enemy_interceptors) > 1:
+        #         self.fight_beta = True
+        #     else:
+        #         self.fight_beta = False
+                
+            
+            
             
             
             
@@ -180,10 +216,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_right(game_state)
         elif self.best_side == 1:
             self.select_left(game_state)
-        else:
-            game_state.attempt_spawn(WALL, [[19,6],[8,6]], 1)
-            game_state.attempt_remove([[19,6],[8,6]])
-            game_state.attempt_spawn(INTERCEPTOR, [[15,1],[12,1]], 1)
+        else: # defence case
+            game_state.attempt_spawn(WALL, [[5, 9], [3, 12], [22, 9], [24, 12]], 1)
+            game_state.attempt_remove([[5, 9], [3, 12], [22, 9], [24, 12]])
+            game_state.attempt_spawn(INTERCEPTOR, [[4 ,9], [23, 9]], 1)
             #game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
@@ -219,11 +255,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             if (s==1) : self.sp -= 1.5
         game_state.attempt_spawn(WALL, [24, 11], 1)
         game_state.attempt_remove([24,11])
+        self.demolisher_required = 0
 
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
-        if 13 <= game_state.get_resource(MP, 1):
+        if 14 <= game_state.get_resource(MP, 1):
             #we need to defend
             self.defend = True
         else:
@@ -354,7 +391,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 s = game_state.attempt_upgrade(loca)
                 if (s==1) : self.sp -= 1.5
 
-    
+    def count_supports(self, game_state):
+        return self.sup_count
 
     def upkeep(self, turn_string):
         """Currently unused start of turn code."""
@@ -371,27 +409,33 @@ class AlgoStrategy(gamelib.AlgoCore):
         
         path = game_state.find_path_to_edge(spawn_loc, target_edge)
         total_threat = 0
-        
+        self.paths.append(path)
+        enemy_turrets = []
         for loc in path:
             threatening_turrets = game_state.get_attackers(loc, 0)
             for threatening_turret in threatening_turrets:
                 total_threat += threatening_turret.damage_i * threatening_turret.health / threatening_turret.max_health
-        return total_threat
+                unit_loc = [threatening_turret.x, threatening_turret.y]
+                if unit_loc not in enemy_turrets:
+                    enemy_turrets.append(unit_loc)
+        return total_threat, enemy_turrets
 
     def pick_side(self, game_state):
         """
         the algo will take care of selecting side
         """
+        enemy_turret_by_path = []
         if not self.enemy_weak_side:
             sides = [0, 1]
             threats = [math.inf] * 2
             for side in sides:
                 equivalent_locs = self.equivalent_locs[side]
-                threat = self.compute_threat(game_state, equivalent_locs)
+                threat, enemy_terret_locs = self.compute_threat(game_state, equivalent_locs)
                 threats[side] = threat
-
-            min_threat = min(threats)
-            self.best_side = threats.index(min_threat)
+                enemy_turret_by_path.append(len(enemy_terret_locs))
+            self.min_threat = min(threats)
+            self.best_side = threats.index(self.min_threat)
+            self.demolisher_required = len(enemy_turret_by_path[self.best_side])
             if self.defend:
                 self.best_side = -1
 
@@ -403,24 +447,32 @@ class AlgoStrategy(gamelib.AlgoCore):
         L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5]]
         for loca in L1:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
+            if (s==1) : 
+                self.sp -= 4
+                self.sup_count += 1
     def build_L2_supports(self, game_state):
         L2 = [[10, 5], [17, 5],[11,4], [12, 4],[13, 4], [14, 4], [15, 4], [16, 4]]
         for loca in L2:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
-
+            if (s==1) : 
+                self.sp -= 4
+                self.sup_count += 1
+                
     def build_L3_supports(self, game_state):
         L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
         for loca in L3:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
-    
+            if (s==1) : 
+                self.sp -= 4
+                self.sup_count += 1
+                
     def build_L4_supports(self, game_state):
         L4 = [[13, 2], [14, 2]]
         for loca in L4:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
+            if (s==1) : 
+                self.sp -= 4
+                self.sup_count += 1
 
     def select_left(self, game_state):
         # """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
