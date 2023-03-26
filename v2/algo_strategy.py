@@ -226,6 +226,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         walls = [[7,9],[7,8], [20,9], [20,8], [8,7],[19, 7], [9, 6],[10,6], [11,6], [12,6], [13,6], [14,6], [15,6], [16,6], [17,6], [18,6]]
         supports = [[10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [11, 4],[12, 4], [13, 4], [14, 4],[15, 4],[16, 4],
                     [12, 3],[13, 3], [14, 3], [15, 3], [13, 2], [14, 2]]
+        gunners = [[18, 7], [9,7]]
+        for loca in gunners:
+            game_state.attempt_spawn(TURRET, loca, 1)
+            game_state.attempt_upgrade(loca)
         for loca in walls:
             game_state.attempt_upgrade(loca)
         for loca in supports:
