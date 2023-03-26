@@ -47,6 +47,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns = 0
         self.sup_count = 0
         self.side_walls = [[5, 8], [22, 8]]
+        self.enemy_attack_thresholds = []
         self.last_turn = math.inf
         self.fight_beta = False
                           # attack enemy right  attack enemy left
@@ -173,19 +174,17 @@ class AlgoStrategy(gamelib.AlgoCore):
                     self.movement_tracks[0] += 1
                 else:
                     self.movement_tracks[1] += 1
-        # if state['turnInfo'][1] != self.last_turn: # everyturn scan if enemy spam intercepters
-        #     self.last_turn = state['turnInfo'][1] # update turn number
-        #     intercepter_count = len(state['p2Units'][5])  # count number of intercepters spawned
-        #     self.enemy_interceptors.append(intercepter_count)
-        #     if mean(self.enemy_interceptors) > 1:
-        #         self.fight_beta = True
-        #     else:
-        #         self.fight_beta = False
-                
-            
-            
-            
-            
+        if state['turnInfo'][1] != self.last_turn: 
+            self.last_turn = state['turnInfo'][1] 
+            # check if enemy used more than 10 points on attacking with demolishers and scouts
+            enemy_mp_spent = 0
+            scouts, demolishers = [state['p2Units'][3], state['p2Units'][4]]
+            for scout in scouts:
+                enemy_mp_spent += 1
+            for demolisher in demolishers:
+                enemy_mp_spent += 3
+            if enemy_mp_spent > 10:
+                self.enemy_attack_thresholds.append(enemy_mp_spent)
             
             
     ### ------------------- Turn Functions ------------------- ###
@@ -257,7 +256,11 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
-        if 14 <= game_state.get_resource(MP, 1):
+        if len(self.enemy_attack_thresholds) >= 1:
+            threshold = sum(self.enemy_attack_thresholds)/len(self.enemy_attack_thresholds)
+        else:
+            threshold = 14
+        if threshold <= game_state.get_resource(MP, 1):
             #we need to defend
             self.defend = True
         else:
