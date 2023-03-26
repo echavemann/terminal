@@ -76,7 +76,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def run_it(self, turn_state):
         self.build_defense(turn_state)
-        
+        #insert attack logic here lmao
+
     def compute_threat(self, game_state, spawn_loc):
         """
         computes the expected damage to receive if spawn at given loc
@@ -169,7 +170,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             if (s==1) : self.sp -= 1.5
         #pick a side. 
         self.pick_side(game_state)
-
+        if self.best_side == 0:
+            self.select_right(game_state)
+        else:
+            self.select_left(game_state)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : self.sp -= 6
