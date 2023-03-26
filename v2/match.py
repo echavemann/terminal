@@ -59,16 +59,7 @@ print("Algo 2:", algo2)
 run_single_game("cd {} && java -jar engine.jar work {} {}".format(parent_dir, algo1, algo2))
 
 
-# import gymnasium as gym
-# import math
-# import random
-# from collections import namedtuple, deque
-# from itertools import count
 
-# import torch
-# import torch.nn as nn
-# import torch.optim as optim
-# import torch.nn.functional as F
 
 # env = gym.make("testEnv")
 
