@@ -143,18 +143,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = int(game_state.get_resource(MP))
         rush_param = 1.5*(5+game_state.turn_number//10)
         if mp < rush_param: return # we need to save more.
-        #TODO: optimize this parameter
-        acceptance_param = (game_state.turn_number//3)
-        if (score) > acceptance_param:
-            self.good = True
-        else:
-            self.good = False
 
         if self.good:
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
         else: #we need to change something
                 game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], int(mp//3))
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp%3))
+
+        #TODO: optimize this parameter
+        acceptance_param = (game_state.turn_number//3)
+        if (score) > acceptance_param:
+            self.good = True
+        else:
+            self.good = False
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
