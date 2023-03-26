@@ -102,7 +102,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def run_it(self, turn_state):
         self.build_defense(turn_state)
-        self.handle_attack(turn_state)
+        if not self.defend:
+            self.handle_attack(turn_state)
         #insert attack logic here lmao
         
     def scan_side(self, game_state):
@@ -174,10 +175,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         elif self.best_side == 1:
             self.select_left(game_state)
         else:
-            game_state.attempt_spawn(WALL, [[24,11],[3,11]], 1)
-            game_state.attempt_remove([[24,11],[3,11]])
+            game_state.attempt_spawn(WALL, [[5,8],[22,8]], 1)
+            game_state.attempt_remove([[5,8],[22,8]])
             game_state.attempt_spawn(INTERCEPTOR, [[15,1],[12,1]], 1)
-            game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
+            #game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : 
@@ -216,7 +217,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
-        if 14 <= game_state.get_resource(MP, 1):
+        if 12 <= game_state.get_resource(MP, 1):
             #we need to defend
             self.defend = True
         else:
