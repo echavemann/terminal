@@ -43,16 +43,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         SP = 0
         self.defense_queue = []
         self.scored_on_locations = []
-                
-    def determine_priority(self):
-        """
-        determine which side we should prioritize according to the locs we have been scored on
-        """
-        self.priority = False
-        if len(self.scored_on_locations) > 0:
-            scored_on_side = max(self.scored_on_count, key=self.scored_on_count.get)
-            count = self.scored_on_count[scored_on_side]
-            self.priority = scored_on_side
     
     def on_turn(self, turn_state):
         """
