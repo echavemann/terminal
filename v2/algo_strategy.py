@@ -47,8 +47,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.side_walls = [[3, 11], [24, 11]]
 
                           # attack enemy right  attack enemy left
-        self.spawn_locs =  [[4, 9], [23, 9]]
-        self.equivalent_locs = [[23, 9], [4, 9]]
+        self.spawn_locs =  [[13,0], [14, 0]]
+        self.equivalent_locs = self.spawn_locs
         self.best_side = 0 # 0 is we are attacking enemy left and picking right side, 1 is we are attacking enemy right and picking left side
     
     def on_turn(self, turn_state):
@@ -74,8 +74,17 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         game_state.submit_turn()
         
+    def handle_attack(self, game_state):
+        """
+        handles attack logic
+        """
+        mp = game_state.get_resource(MP)
+        if mp > 8:
+            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        
     def run_it(self, turn_state):
         self.build_defense(turn_state)
+        self.handle_attack(turn_state)
         #insert attack logic here lmao
 
     def on_action_frame(self, turn_string):
@@ -183,8 +192,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             equivalent_locs = self.equivalent_locs[side]
             threat = self.compute_threat(game_state, equivalent_locs)
             threats[side] = threat
+
         min_threat = min(threats)
         self.best_side = threats.index(min_threat)
+        
+        gamelib.debug_write(f"   {threat}")
+
         gamelib.debug_write(f"  best side is {self.best_side} with threat {min_threat}")
 
 
@@ -214,8 +227,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         # """Chooses the right side to attack on - builds a wall on the left. Requires 0.5SP."""
         game_state.attempt_spawn(WALL, [3, 11], 1)
         game_state.attempt_remove([3,11])
-        
-
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
