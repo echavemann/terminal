@@ -357,6 +357,9 @@ class AlgoStrategy(gamelib.AlgoCore):
     def L3RHS(self, game_state):
         game_state.attempt_upgrade([1,12])
         game_state.attempt_upgrade([4,11])
+        game_state.attempt_upgrade([8,7])
+        game_state.attempt_upgrade([20,8])
+        game_state.attempt_upgrade([19,7])
     
     def L3LHS(self, game_state):
         game_state.attempt_upgrade([26,12])
