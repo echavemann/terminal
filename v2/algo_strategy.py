@@ -151,6 +151,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.BuildL1(game_state)
         #Fortify L2s
         self.BuildL2(game_state)
+        #Fortify L3s
+        self.BuildL3(game_state)
+        #Fortify L4s
+        self.BuildL4(game_state)
+        #iron man dies
+        self.build_endgame(game_state)
+
 
     def build_initial(self, game_state):
         """Builds our initial defensive structure - with side leaning. """
@@ -172,7 +179,16 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def build_endgame(self, game_state):
+        walls = [[8,7],[19, 7], [9, 6],[10,6], [11,6], [12,6], [13,6], [14,6], [15,6], [16,6], [17,6], [18,6]]
+        supports = [[10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [11, 4],[12, 4], [13, 4], [14, 4],[15, 4],[16, 4]
+                    [12, 3],[13, 3], [14, 3], [15, 3], [13, 2], [14, 2]]
+        for loca in walls:
+            game_state.attempt_spawn(WALL, loca, 1)
+        for loca in supports:
+            game_state.attempt_spawn(SUPPORT, loca, 1)
         return
+
+    
 
     def BuildL4(self, game_state):
         self.build_L4_supports(game_state)
