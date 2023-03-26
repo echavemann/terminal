@@ -336,7 +336,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_upgrade([6,9])
     
     def L4LHS(self, game_state):
-        game_state.attempt_upgrade([25,11])
+        game_state.attempt_upgrade([25,12])
         game_state.attempt_upgrade([22,10])
         game_state.attempt_upgrade([21,9])
         walls = [[5,12], [6, 11]]
@@ -374,7 +374,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         return
 
     def L2RHS(self, game_state):
-        s = game_state.attempt_spawn(TURRET, [25, 11], 1) #RHS
+        s = game_state.attempt_spawn(TURRET, [25, 12], 1) #RHS
         if (s==1) : self.sp -= 6
         if self.sp < 6.5: return
         walls = [[21,11], [20,9], [20,8]]
