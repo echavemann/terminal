@@ -68,7 +68,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.turns += 1
         self.sp = game_state.get_resource(SP)
         self.mp = game_state.get_resource(MP)
-
+        self.scan_side(game_state)
         self.fortside = max(self.movement_tracks, key=self.movement_tracks.get)
         
         if self.turns == 1: 
