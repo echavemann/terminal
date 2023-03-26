@@ -151,7 +151,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def run_it(self, game_state):
         """core turn logic"""
-        pass
+        #attack needs to go here
+        self.build_defense(game_state)
+        return
 
     def build_defense(self, game_state):
         """Builds our defensive structure - with side leaning."""
