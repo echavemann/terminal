@@ -50,7 +50,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.last_turn = math.inf
         self.fight_beta = False
                           # attack enemy right  attack enemy left
-        self.spawn_locs =  [[13,0], [14, 0]]
+        self.spawn_locs =  [[4, 9], [23, 9]]
         self.equivalent_locs = self.spawn_locs
         self.best_side = 0
         self.movement_tracks = {0: 0, 1: 0} # 0 if left, 1 if right
