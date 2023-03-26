@@ -79,12 +79,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
-                if location[0] <= 5:
-                    self.scored_on_count['left'] += 1
-                elif location[0] >= 22:
-                    self.scored_on_count['right'] += 1
-                else:
-                    self.scored_on_count['mid'] += 1
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
