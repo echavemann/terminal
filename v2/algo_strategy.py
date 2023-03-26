@@ -96,7 +96,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = game_state.get_resource(MP)
         if not self.enemy_weak_side:
             # regular attack logic
-            self.regular_attack(game_state)
+            self.attack_v2(game_state)
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
             count = max(1, count)
@@ -130,6 +130,26 @@ class AlgoStrategy(gamelib.AlgoCore):
         if not self.defend:
             self.handle_attack(turn_state)
         #insert attack logic here lmao
+
+    def attack_v2(self, game_state):
+        self.score.append(self.ehp - game_state.enemy_health)
+        #writeback
+        self.ehp = game_state.enemy_health
+        mp = int(game_state.get_resource(MP))
+
+        #TODO: optimize this parameter
+        if (self.expectation[-1] - self.score[-1]) < 2:
+            #we are doing well. keep going. 
+            if self.demolisher_required < 3:
+                #if 1 or 2 towers, we just rush wth our scouts.
+                if mp > 8:
+                    game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+                    self.expectation.append(int(mp))
+        else: #we need to change something
+            if mp >= 3*self.demolisher_required + 3: #spawn maximum number of demolishers to attempt to break through
+                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], int(mp//3))
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp%3))
+                self.expectation.append(int(mp//3) + int(mp%3))
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
