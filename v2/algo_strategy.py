@@ -141,6 +141,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_defense(self, game_state):
         """Builds our defensive structure - with side leaning."""
         #rebuild the initial defenses
+        self.check_mp(game_state)
         INITGUNS = [[1, 12], [26, 12], [4, 11]]
         INITWALLS = [[0, 13], [27, 13], [2, 12], [4, 12],[22, 12], [23, 12], [25, 12], [5, 11], [21, 11], [22, 11], [6, 10], [21, 10], [7, 9], [20, 9], [7, 8], [20, 8], [8, 7], [19, 7], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6], [16, 6], [17, 6], [18, 6]]  
         INITUWALLS = [[4, 12],[23, 12],[5,11],[22,11],[6,10]]   
@@ -157,8 +158,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.pick_side(game_state)
         if self.best_side == 0:
             self.select_right(game_state)
-        else:
+        elif self.best_side == 1:
             self.select_left(game_state)
+        else:
+            game_state.attempt_spawn(WALL, [[24,11],[3,11]], 1)
+            game_state.attempt_spawn(INTERCEPTOR, [[15,1],[12,1]], 1)
+            game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : 
@@ -195,6 +200,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([24,11])
 
     ###-------------------- Helper Functions -------------------###
+
+    def check_mp(self, game_state):
+        if 15 <= game_state.get_resource(MP, 1):
+            #we need to defend
+            self.defend = True
+        else:
+            self.defend = False
 
     def build_endgame(self, game_state):
         walls = [[7,9],[7,8], [20,9], [20,8], [8,7],[19, 7], [9, 6],[10,6], [11,6], [12,6], [13,6], [14,6], [15,6], [16,6], [17,6], [18,6]]
@@ -354,10 +366,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         min_threat = min(threats)
         self.best_side = threats.index(min_threat)
-        
-        gamelib.debug_write(f"   {threat}")
-
-        gamelib.debug_write(f"  best side is {self.best_side} with threat {min_threat}")
+        if self.defend:
+            self. best_side = -1
 
     #L1: 115-165
     #L2: 105, 175, 114-164
