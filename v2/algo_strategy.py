@@ -433,7 +433,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 equivalent_locs = self.equivalent_locs[side]
                 threat, enemy_terret_locs = self.compute_threat(game_state, equivalent_locs)
                 threats[side] = threat
-                enemy_turret_by_path.append(len(enemy_terret_locs))
+                enemy_turret_by_path.append(enemy_terret_locs)
             self.min_threat = min(threats)
             self.best_side = threats.index(self.min_threat)
             self.demolisher_required = len(enemy_turret_by_path[self.best_side])
