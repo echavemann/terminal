@@ -99,7 +99,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = game_state.get_resource(MP)
         if not self.enemy_weak_side:
             # regular attack logic
-            self.attack_v2(game_state)
+            self.regular_attack(game_state)
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
             count = max(1, count)
