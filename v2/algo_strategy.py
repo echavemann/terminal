@@ -206,12 +206,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             if (s==1) : self.sp -= 4
 
     def select_left(self, game_state):
-        """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
+        # """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
         game_state.attempt_spawn(WALL, [24, 11], 1)
         game_state.attempt_remove([24,11])
 
     def select_right(self, game_state):
-        """Chooses the right side to attack on - builds a wall on the left. Requires 0.5SP."""
+        # """Chooses the right side to attack on - builds a wall on the left. Requires 0.5SP."""
         game_state.attempt_spawn(WALL, [3, 11], 1)
         game_state.attempt_remove([3,11])
         
