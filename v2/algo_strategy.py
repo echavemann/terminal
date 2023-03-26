@@ -61,6 +61,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemysides = [self.enemy_left_side, self.enemy_right_side]
         self.good = False
         self.ehp = 30
+        self.last_turn_demolisher_sent = 0
     
     def on_turn(self, turn_state):
         """
