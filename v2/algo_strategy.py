@@ -148,8 +148,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : 
             self.sp -= 6
-        else:
-            return #we need to build this lmao
+        elif self.sp -6 < 0 :
+            return
         #Fortify a side. 
         self.BuildL1(game_state)
         #Fortify L2s
