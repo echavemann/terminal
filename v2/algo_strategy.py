@@ -277,6 +277,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             #RHS Turret
             s = game_state.attempt_spawn(TURRET, [5, 10], 1)
             if (s==1) : self.sp -= 6
+            #RHS new wall
+            s = game_state.attempt_spawn(WALL, [26, 13], 1)
+            if (s==1) : self.sp -= 1.5
             #RHS Wall Upgrades
             L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13],[21,10]]
             for loca in L1wallsRHS:
@@ -287,6 +290,9 @@ class AlgoStrategy(gamelib.AlgoCore):
     def L1LHS(self, game_state):
             s = game_state.attempt_spawn(TURRET, [22, 10], 1)
             if (s==1) : self.sp -= 6
+
+            s = game_state.attempt_spawn(WALL, [1, 13], 1)
+            if (s==1) : self.sp -= 1.5
             #LHS Wall Upgrades
             L1wallsLHS = [[0,13],[1,13],[2,12],[4,12]]
             for loca in L1wallsLHS:
