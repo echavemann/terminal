@@ -131,32 +131,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_left(game_state)
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
+        if (s==1) : self.sp -= 6
         #Fortify a side. 
-        #LHS Turret
-        s = game_state.attempt_spawn(TURRET, [5, 10], 1)
-        #RHS Wall Upgrades
-        L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13]]
-        for loca in L1wallsRHS:
-            game_state.attempt_upgrade(loca)
-        game_state.attempt_spawn(SUPPORT, [13, 5], 1)
-        #RHS Turret
-        s = game_state.attempt_spawn(TURRET, [22, 10], 1)
-        #LHS Wall Upgrades
-        L1wallsLHS = [[0,13],[1,13],[2,12],[4,12]]
-        for loca in L1wallsLHS:
-            game_state.attempt_upgrade(loca)
-        #RHS Wall Upgrades
-        L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13],[21,10]]
-        for loca in L1wallsRHS:
-            game_state.attempt_upgrade(loca)
-        game_state.attempt_spawn(SUPPORT, [13, 5], 1)
-
-        rhs = [[26,13],[27,13],[20, 8],[20,9],[21,10],[22,11],[23,12]]
-        lhs = [[0, 13], [1,13],[2,12],[7,8],]# do wall upgrades 
-        wall_upgrades = rhs + lhs
-        for loca in wall_upgrades:
-            game_state.attempt_upgrade(loca)
-            if (s==1) : self.sp -= 1.5
+        self.BuildL1(game_state)
+        #Fortify L2s
         
         #spawn supports
         self.build_supports(game_state)
@@ -179,6 +157,43 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([24,11])
 
     ###-------------------- Helper Functions -------------------###
+
+    def BuildL1(self, game_state):
+        if self.fortside != 0:
+            self.L1RHS(game_state)
+            if self.sp < 0.5: return
+            game_state.attempt_spawn(SUPPORT, [14, 5], 1)
+            self.L1LHS(game_state)
+        else:
+            self.L1LHS(game_state)
+            if self.sp < 0.5: return
+            game_state.attempt_spawn(SUPPORT, [15, 5], 1)
+            self.L1RHS(game_state)
+        self.build_L1_supports(game_state)
+        return
+        
+    def L1RHS(self, game_state):
+            #RHS Turret
+            s = game_state.attempt_spawn(TURRET, [5, 10], 1)
+            if (s==1) : self.sp -= 6
+            #RHS Wall Upgrades
+            L1wallsRHS = [[22,12], [25, 12],[26, 13],[27,13],[21,10]]
+            for loca in L1wallsRHS:
+                s = game_state.attempt_upgrade(loca)
+                if (s==1) : self.sp -= 1.5
+            game_state.attempt_spawn(SUPPORT, [13, 5], 1)
+    
+    def L1LHS(self, game_state):
+            s = game_state.attempt_spawn(TURRET, [22, 10], 1)
+            if (s==1) : self.sp -= 6
+            #LHS Wall Upgrades
+            L1wallsLHS = [[0,13],[1,13],[2,12],[4,12]]
+            for loca in L1wallsLHS:
+                s = game_state.attempt_upgrade(loca)
+                if (s==1) : self.sp -= 1.5
+
+    
+
     def upkeep(self, turn_string):
         """Currently unused start of turn code."""
         game_state = gamelib.GameState(self.config, turn_string)
@@ -235,6 +250,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             if (s==1) : self.sp -= 4
         if self.sp < 4: return
         for loca in L3:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+    
+    def build_L1_supports(self, game_state):
+        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
+        for loca in L1:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
 
