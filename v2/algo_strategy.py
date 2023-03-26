@@ -141,7 +141,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         score = self.ehp - game_state.enemy_health
         self.ehp = game_state.enemy_health
         mp = int(game_state.get_resource(MP))
-        rush_param = 1.5*(5+game_state.turn_number//10)
+        rush_param = 2*(5+game_state.turn_number//10)
         if mp < rush_param: return # we need to save more.
 
         if self.good:
