@@ -114,6 +114,38 @@ class AlgoStrategy(gamelib.AlgoCore):
         """core turn logic"""
         pass
 
+    def build_defense(self, game_state):
+        """Builds our defensive structure - with side leaning."""
+        #rebuild the initial defenses
+        INITGUNS = [[1, 12], [26, 12], [4, 11]]
+        INITWALLS = [[0, 13],[3,16], [27, 13], [2, 12], [4, 12],[22, 12], [23, 12], [25, 12], [5, 11], [21, 11], [22, 11], [6, 10], [21, 10], [7, 9], [20, 9], [7, 8], [20, 8], [8, 7], [19, 7], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6], [16, 6], [17, 6], [18, 6]]  
+        INITUWALLS = [[4, 12],[23, 12],[5,11],[22,11],[6,10]]   
+        for loca in INITGUNS:
+            s = game_state.attempt_spawn(TURRET, loca, 1)
+            if (s==1) : self.sp -= 6
+        for loca in INITWALLS:
+            game_state.attempt_spawn(WALL, loca, 1)
+            if (s==1) : self.sp -= 0.5
+        for loca in INITUWALLS:
+            game_state.attempt_upgrade(loca)
+            if (s==1) : self.sp -= 1.5
+        #pick a side. 
+        
+
+        #spawn symmetrical turret
+        s = game_state.attempt_spawn(TURRET, [23, 11], 1)
+        if (s==1) : self.sp -= 6
+        wall_upgrades = [] # do wall upgrades
+        for loca in wall_upgrades:
+            game_state.attempt_upgrade(loca)
+            if (s==1) : self.sp -= 1.5
+        
+        #spawn supports
+        self.build_supports(game_state)
+
+
+
+
     def select_left(self, game_state):
         """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
         game_state.attempt_spawn(WALL, [24, 11], 1)
