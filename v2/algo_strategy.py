@@ -337,31 +337,42 @@ class AlgoStrategy(gamelib.AlgoCore):
         return
 
     def L2RHS(self, game_state):
-        game_state.attempt_spawn(TURRET, [25, 11], 1) #RHS
+        s = game_state.attempt_spawn(TURRET, [25, 11], 1) #RHS
+        if (s==1) : self.sp -= 6
+        if self.sp < 6.5: return
         walls = [[21,11], [20,9], [20,8]]
         for loca in walls:
-            game_state.attempt_spawn(WALL, loca, 1)
-        game_state.attempt_spawn(TURRET, [21, 9], 1) #RHS
+            s = game_state.attempt_spawn(WALL, loca, 1)
+            if (s==1) : self.sp -= 1.5
+        s= game_state.attempt_spawn(TURRET, [21, 9], 1) #RHS
+        if (s==1) : self.sp -= 6
 
     
     def L2LHS(self, game_state):
-        game_state.attempt_spawn(TURRET, [2, 11], 1) #LHS
+        
+        s = game_state.attempt_spawn(TURRET, [2, 11], 1) #LHS
+        if (s==1) : self.sp -= 6
+        if self.sp < 6.5: return
         walls = [[7,9],[7,8],[2,12]]
         for loca in walls:
-            game_state.attempt_spawn(WALL, loca, 1)
-        game_state.attempt_spawn(TURRET, [6, 9], 1) #LHS
+            s = game_state.attempt_spawn(WALL, loca, 1)
+            if (s==1) : self.sp -= 1.5
+        s = game_state.attempt_spawn(TURRET, [6, 9], 1) #LHS
+        if (s==1) : self.sp -= 6
     
 
     def BuildL1(self, game_state):
         if self.fortside != 0: #we build RHS
             self.L1RHS(game_state)
-            if self.sp < 0.5: return
-            game_state.attempt_spawn(SUPPORT, [14, 5], 1)
+            if self.sp < 6.5: return
+            s = game_state.attempt_spawn(SUPPORT, [14, 5], 1)
+            if (s==1) : self.sp -= 4
             self.L1LHS(game_state)
         else:
             self.L1LHS(game_state)
-            if self.sp < 0.5: return
-            game_state.attempt_spawn(SUPPORT, [15, 5], 1)
+            if self.sp < 6.5: return
+            s = game_state.attempt_spawn(SUPPORT, [15, 5], 1)
+            if (s==1) : self.sp -= 4
             self.L1RHS(game_state)
         self.build_L1_supports(game_state)
         return
