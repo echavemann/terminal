@@ -109,30 +109,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         regular attack logic
         """
         mp = game_state.get_resource(MP)
-        if self.min_threat >= 350 and mp >= 16:
-            if self.sup_count >= 6:
-                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], 3)
-                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], 100)
-            else:
-                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], 4)
-                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], 100)
-        else:
-            mp_required = 3 * self.demolisher_required + 4
-            if mp >= mp_required:
-                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], int(self.demolisher_required))
-                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], 100)
-        #     demolisher_required = self.min_threat // ((16 + self.sup_count*2)*4)
-        #     gamelib.debug_write('demolisher_required: {}, threat {}'.format(demolisher_required, self.min_threat))
-        #     sp_required = 3 * demolisher_required
-        #     if mp >= sp_required:
-        #         game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], demolisher_required)
-        #         game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(game_state.get_resource(MP)))
-        # elif self.min_threat < 60 and mp >= 8: # weak defense, spawn all scouts
-        #     game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(game_state.get_resource(MP)))
-        # elif mp > 10:
-        #     game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], 2)
-        #     game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(game_state.get_resource(MP)))
-        
+        if self.demolisher_required < 3:
+            if mp > 8:
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        elif mp >= 3*self.demolisher_required + 3:
+            game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], self.demolisher_required)
+            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
         
     def scan_and_attack(self, game_state):
         """
