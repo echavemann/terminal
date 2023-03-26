@@ -132,6 +132,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         #insert attack logic here lmao
 
     def attack_v2(self, game_state):
+        if self.turns == 1:
+            #we have base behavior. 
+            self.expectation.append(0)
+            return
         self.score.append(self.ehp - game_state.enemy_health)
         #writeback
         self.ehp = game_state.enemy_health
