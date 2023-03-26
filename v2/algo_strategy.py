@@ -77,7 +77,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         for loc in path:
             threatening_turrets = game_state.get_attackers(loc, 0)
             for threat in threatening_turrets:
-                total_threat += threat.damage_i * threat.health / threa.max_health
+                total_threat += threat.damage_i * threat.health / threat.max_health
         return total_threat
 
     def on_action_frame(self, turn_string):
@@ -143,7 +143,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_upgrade(loca)
             if (s==1) : self.sp -= 1.5
         #pick a side. 
-        
+
 
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
