@@ -185,6 +185,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             threats[side] = threat
         min_threat = min(threats)
         self.best_side = threats.index(min_threat)
+        gamelib.debug_write(f"  best side is {self.best_side} with threat {min_threat}")
 
 
     def build_supports(self, game_state):
