@@ -66,6 +66,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         game_state.submit_turn()
+        
+    def compute_threat(self, game_state, spawn_loc):
+        """
+        computes the expected damage to receive if spawn at given loc
+        """
+        target_edge = game_state.get_target_edge(spawn_loc)
+        path = game_state.find_path_to_edge(spawn_loc, target_edge)
+        total_threat = 0
+        for loc in path:
+            threatening_turrets = game_state.get_attackers(loc, 0)
+            for threat in threatening_turrets:
+                total_threat += threat.damage_i * threat.health / threa.max_health
+        return total_threat
 
     def on_action_frame(self, turn_string):
         """
