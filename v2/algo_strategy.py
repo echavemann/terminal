@@ -212,11 +212,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_right(game_state)
         elif self.best_side == 1:
             self.select_left(game_state)
-        else: # defence case
+        else: # defence case, spawn interceptors
             game_state.attempt_spawn(WALL, [[3, 11], [24, 11], [8, 5]], 1)
             game_state.attempt_remove([[3, 11], [24, 11], [8, 5]])
-            game_state.attempt_spawn(INTERCEPTOR, [[4 ,9], [23, 9], [7, 6], [20, 6]], 1)
+            game_state.attempt_spawn(INTERCEPTOR, [[7, 6], [20, 6]], 1)
             #game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
+            
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : 
