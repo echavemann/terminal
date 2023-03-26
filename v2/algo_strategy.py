@@ -171,6 +171,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_left(game_state)
         else:
             game_state.attempt_spawn(WALL, [[24,11],[3,11]], 1)
+            game_state.attempt_remove([[24,11],[3,11]])
             game_state.attempt_spawn(INTERCEPTOR, [[15,1],[12,1]], 1)
             game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
         #spawn symmetrical turret
@@ -211,7 +212,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
-        if 15 <= game_state.get_resource(MP, 1):
+        if 14 <= game_state.get_resource(MP, 1):
             #we need to defend
             self.defend = True
         else:
