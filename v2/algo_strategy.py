@@ -282,7 +282,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
-        if threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 24:
+        if threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 22:
             #we need to defend
             self.defend = True
         else:
