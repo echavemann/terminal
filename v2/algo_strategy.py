@@ -19,6 +19,12 @@ Advanced strategy tips:
   the actual current map state.
 """
 
+def ema(data, alpha = 0.6):
+    ema_values = [data[0]]
+    for i in range(1, len(data)):
+        ema_values.append(alpha * data[i] + (1 - alpha) * ema_values[-1])
+    return ema_values
+
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
@@ -294,7 +300,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write("checking mp")
 
         if len(self.enemy_attack_thresholds) >= 1:
-            threshold = sum(self.enemy_attack_thresholds)/len(self.enemy_attack_thresholds)
+            threshold = ema(self.enemy_attack_thresholds, 0.6)[-1]
             gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
@@ -541,3 +547,4 @@ class AlgoStrategy(gamelib.AlgoCore):
 if __name__ == "__main__":
     algo = AlgoStrategy()
     algo.start()
+
