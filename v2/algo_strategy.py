@@ -44,6 +44,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.defense_queue = []
         self.scored_on_locations = []
         self.turns = 0
+        self.side_walls = [[3, 11], [24, 11]]
+
+                          # attack enemy right  attack enemy left
+        self.spawn_locs =  [[4, 9], [23, 9]]
+        self.equivalent_locs = [[23, 9], [23, 9]]
+        self.best_side = 0 # 0 is we are attacking enemy left and picking right side, 1 is we are attacking enemy right and picking left side
     
     def on_turn(self, turn_state):
         """
@@ -62,6 +68,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.submit_turn()
             return
         self.run_it(game_state)
+        
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
@@ -72,13 +79,28 @@ class AlgoStrategy(gamelib.AlgoCore):
         computes the expected damage to receive if spawn at given loc
         """
         target_edge = game_state.get_target_edge(spawn_loc)
+        
         path = game_state.find_path_to_edge(spawn_loc, target_edge)
         total_threat = 0
+        
         for loc in path:
             threatening_turrets = game_state.get_attackers(loc, 0)
-            for threat in threatening_turrets:
-                total_threat += threat.damage_i * threat.health / threat.max_health
+            for threatening_turret in threatening_turrets:
+                total_threat += threatening_turret.damage_i * threatening_turret.health / threatening_turret.max_health
         return total_threat
+
+    def pick_side(self, game_state):
+        """
+        the algo will take care of selecting side
+        """
+        sides = [0, 1]
+        threats = [math.inf] * 2
+        for side in sides:
+            equivalent_locs = self.equivalent_locs[side]
+            threat = self.compute_threat(game_state, equivalent_locs)
+            threats[side] = threat
+        min_threat = min(threats)
+        self.best_side = threats.index(min_threat)
 
     def on_action_frame(self, turn_string):
         """
@@ -143,7 +165,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_upgrade(loca)
             if (s==1) : self.sp -= 1.5
         #pick a side. 
-
+        
 
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
@@ -155,8 +177,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         
         #spawn supports
         self.build_supports(game_state)
-
-
 
 
     def select_left(self, game_state):
