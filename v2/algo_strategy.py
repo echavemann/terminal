@@ -115,7 +115,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                     unit = game_state.contains_stationary_unit(loc)
                     if unit and unit.damage_i > 0:
                         attacker_count += 1
-                if attacker_count <= 2:
+                if attacker_count <= 1:
                     side = not self.enemysides.index(side)
                     self.enemy_weak_side = [side, attacker_count]
                     self.best_side = side
