@@ -149,11 +149,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
 
-    def run_it(self, game_state):
-        """core turn logic"""
-        #attack needs to go here
-        self.build_defense(game_state)
-        return
 
     def build_defense(self, game_state):
         """Builds our defensive structure - with side leaning."""
