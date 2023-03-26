@@ -48,7 +48,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
                           # attack enemy right  attack enemy left
         self.spawn_locs =  [[4, 9], [23, 9]]
-        self.equivalent_locs = [[23, 9], [23, 9]]
+        self.equivalent_locs = [[23, 9], [4, 9]]
         self.best_side = 0 # 0 is we are attacking enemy left and picking right side, 1 is we are attacking enemy right and picking left side
     
     def on_turn(self, turn_state):
