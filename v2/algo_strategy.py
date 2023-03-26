@@ -364,6 +364,8 @@ class AlgoStrategy(gamelib.AlgoCore):
     def L3LHS(self, game_state):
         game_state.attempt_upgrade([26,12])
         game_state.attempt_upgrade([23,11])
+        game_state.attempt_upgrade([5,12])
+        game_state.attempt_upgrade([6,11])
 
     def BuildL2(self, game_state):
         if self.fortside != 0: #we build rhs
