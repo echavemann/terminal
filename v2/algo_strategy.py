@@ -45,7 +45,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.scored_on_locations = []
         self.turns = 0
         self.side_walls = [[3, 11], [24, 11]]
-
+        self.last_turn = math.inf
+        self.fight_beta = False
                           # attack enemy right  attack enemy left
         self.spawn_locs =  [[13,0], [14, 0]]
         self.equivalent_locs = self.spawn_locs
@@ -148,6 +149,10 @@ class AlgoStrategy(gamelib.AlgoCore):
                     self.movement_tracks[0] += 1
                 else:
                     self.movement_tracks[1] += 1
+        if state['turnInfo']['turnNumber'] != self.last_turn:
+            self.last_turn = state['turnInfo']['turnNumber']
+            
+            
             
             
     ### ------------------- Turn Functions ------------------- ###
