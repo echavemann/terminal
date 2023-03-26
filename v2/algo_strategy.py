@@ -92,6 +92,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
+            count = max(1, count)
+            gamelib.debug_write('side: {}, count: {}'.format(side, count))
             if mp >= count * 3 + 1: # if have enough mp for spawning scouts and demolishers
                 game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count)
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[side], int(mp))
@@ -103,17 +105,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
-        self.enemy_weak_side = False
-        for side in self.enemysides:
-            attacker_count = 0
-            for loc in side:
-                unit = game_state.contains_stationary_unit(loc)
-                if unit and unit.damage_i > 0:
-                    attacker_count += 1
-            if attacker_count <= 2:
-                side = self.enemysides.index(side)
-                self.enemy_weak_side = [side, attacker_count]
-                self.best_side = side
+        if game_state.turn_number != 0:
+            self.enemy_weak_side = False
+            for side in self.enemysides:
+                attacker_count = 0
+                for loc in side:
+                    unit = game_state.contains_stationary_unit(loc)
+                    if unit and unit.damage_i > 0:
+                        attacker_count += 1
+                if attacker_count <= 2:
+                    side = not self.enemysides.index(side)
+                    self.enemy_weak_side = [side, attacker_count]
+                    self.best_side = side
                 
     def on_action_frame(self, turn_string):
         """
