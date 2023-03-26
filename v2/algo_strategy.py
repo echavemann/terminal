@@ -6,19 +6,6 @@ from sys import maxsize
 import json
 import heapq as pq
 
-"""
-Most of the algo code you write will be in this file unless you create new
-modules yourself. Start by modifying the 'on_turn' function.
-
-Advanced strategy tips: 
-
-  - You can analyze action frames by modifying on_action_frame function
-
-  - The GameState.map object can be manually manipulated to create hypothetical 
-  board states. Though, we recommended making a copy of the map to preserve 
-  the actual current map state.
-"""
-
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
