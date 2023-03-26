@@ -66,9 +66,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         self.turns += 1
+        self.enemy_weak_side = False
         self.sp = game_state.get_resource(SP)
         self.mp = game_state.get_resource(MP)
         self.scan_side(game_state)
+
         self.fortside = max(self.movement_tracks, key=self.movement_tracks.get)
         
         if self.turns == 1: 
@@ -106,7 +108,6 @@ class AlgoStrategy(gamelib.AlgoCore):
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
         if game_state.turn_number != 0:
-            self.enemy_weak_side = False
             for side in self.enemysides:
                 attacker_count = 0
                 for loc in side:
