@@ -211,9 +211,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         elif self.best_side == 1:
             self.select_left(game_state)
         else: # defence case, spawn interceptors
-            game_state.attempt_spawn(WALL, [[3, 11], [24, 11], [8, 5]], 1)
-            game_state.attempt_remove([[3, 11], [24, 11], [8, 5]])
-            game_state.attempt_spawn(INTERCEPTOR, [[7, 6], [20, 6]], 1)
+            game_state.attempt_spawn(WALL, [[3, 11], [24, 11], [9, 4], [9, 5]], 1)
+            game_state.attempt_remove([[3, 11], [24, 11], [9, 4], [9, 5]])
+            game_state.attempt_spawn(INTERCEPTOR, [[19, 5], [21, 7], [8, 5], [6, 7]], 1)
             #game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
             
         #spawn symmetrical turret
@@ -262,7 +262,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
-        if threshold <= game_state.get_resource(MP, 1):
+        if threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 24:
             #we need to defend
             self.defend = True
         else:
