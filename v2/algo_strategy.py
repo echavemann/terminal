@@ -5,6 +5,8 @@ import warnings
 from sys import maxsize
 import json
 import heapq as pq
+import sys
+sys.stdout = open('output.txt','wt')
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -86,8 +88,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             return
         self.run_it(game_state)
         
-        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
-        gamelib.debug_write('Turn state is {}'.format(turn_state))
+        # gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
+        print('turn {}, Turn state is {}'.format(game_state.turn_number, turn_state))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         game_state.submit_turn()
