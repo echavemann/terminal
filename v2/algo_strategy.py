@@ -61,7 +61,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemysides = [self.enemy_left_side, self.enemy_right_side]
         self.good = False
         self.ehp = 30
-        self.last_turn_demolisher_sent = 0
+        self.defended = False
+        self.damage_taken = 0
+        self.curr_health = 30
     
     def on_turn(self, turn_state):
         """
@@ -80,7 +82,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.scan_side(game_state)
         self.paths = []
         self.fortside = max(self.movement_tracks, key=self.movement_tracks.get)
-        
+        self.damage_taken = self.curr_health - game_state.my_health
+        self.curr_health = game_state.my_health
         if self.turns == 1: 
             self.build_initial(game_state)
             game_state.submit_turn()
@@ -236,10 +239,17 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_right(game_state)
         elif self.best_side == 1:
             self.select_left(game_state)
-        else: # defence case, spawn interceptors
-            game_state.attempt_spawn(WALL, [[3, 11], [24, 11], [9, 4], [9, 5]], 1)
-            game_state.attempt_remove([[3, 11], [24, 11], [9, 4], [9, 5]])
-            game_state.attempt_spawn(INTERCEPTOR, [[19, 5], [21, 7], [8, 5], [6, 7]], 1)
+        else: # defense case, spawn interceptors
+            interceptor_loc = [[19, 5], [21, 7], [8, 5], [6, 7]]
+            wall_loc = [[3, 11], [24, 11], [9, 4], [9, 5]]
+            if self.defended and self.damage_taken >= 3: # patch for loops on enemy side
+                interceptor_loc = [[13, 0], [14, 0]]                
+            game_state.attempt_spawn(WALL, wall_loc, 1)
+            game_state.attempt_remove(wall_loc)
+            game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 1)
+            
+            self.defended = True
+
             #game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
             
         #spawn symmetrical turret
