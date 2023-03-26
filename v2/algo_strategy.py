@@ -165,7 +165,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_upgrade(loca)
             if (s==1) : self.sp -= 1.5
         #pick a side. 
-        
+        self.pick_side(game_state)
 
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
