@@ -136,7 +136,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_supports(self, game_state):
         L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
         L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4], [17, 4], [10, 4]]
-        L3 = [[13, 3], [14, 3], [15, 3], [12, 3], [16, 3], [11, 3], [17, 3], [10, 3]]
+        L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
         for loca in L1:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
@@ -177,7 +177,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         #spawn symmetrical turret
         s = game_state.attempt_spawn(TURRET, [23, 11], 1)
         if (s==1) : self.sp -= 6
-        wall_upgrades = [] # do wall upgrades
+        rhs = [[26,13],[27,13],[20, 8],[20,9],[21,10],[22,11],[23,12]]
+        wall_upgrades = [[0, 13], [1,13],[2,12],[7,8],]# do wall upgrades
+        wall_upgrades += rhs
         for loca in wall_upgrades:
             game_state.attempt_upgrade(loca)
             if (s==1) : self.sp -= 1.5
