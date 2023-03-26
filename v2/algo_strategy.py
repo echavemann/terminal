@@ -87,8 +87,14 @@ class AlgoStrategy(gamelib.AlgoCore):
         handles attack logic
         """
         mp = game_state.get_resource(MP)
-        if mp > 8:
-            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        if not self.enemy_weak_side:
+            if mp > 8:
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+        else: # handle enemy weak side exploit
+            side, count = self.enemy_weak_side
+            if mp >= count * 3 + 1: # if have enough mp for spawning scouts and demolishers
+                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count)
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[side], int(mp))
         
     def run_it(self, turn_state):
         self.build_defense(turn_state)
@@ -97,14 +103,17 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
+        self.enemy_weak_side = False
         for side in self.enemysides:
             attacker_count = 0
             for loc in side:
                 unit = game_state.contains_stationary_unit(loc)
-                if unit and unit.damage_i:
+                if unit and unit.damage_i > 0:
                     attacker_count += 1
-            if attacker_count <= 1:
-                self.enemy_weak_side = self.enemysides.index(side)
+            if attacker_count <= 2:
+                side = self.enemysides.index(side)
+                self.enemy_weak_side = [side, attacker_count]
+                self.best_side = side
                 
     def on_action_frame(self, turn_string):
         """
@@ -357,17 +366,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         the algo will take care of selecting side
         """
-        sides = [0, 1]
-        threats = [math.inf] * 2
-        for side in sides:
-            equivalent_locs = self.equivalent_locs[side]
-            threat = self.compute_threat(game_state, equivalent_locs)
-            threats[side] = threat
+        if not self.enemy_weak_side:
+            sides = [0, 1]
+            threats = [math.inf] * 2
+            for side in sides:
+                equivalent_locs = self.equivalent_locs[side]
+                threat = self.compute_threat(game_state, equivalent_locs)
+                threats[side] = threat
 
-        min_threat = min(threats)
-        self.best_side = threats.index(min_threat)
-        if self.defend:
-            self. best_side = -1
+            min_threat = min(threats)
+            self.best_side = threats.index(min_threat)
+            if self.defend:
+                self.best_side = -1
 
     #L1: 115-165
     #L2: 105, 175, 114-164
