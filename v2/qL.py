@@ -10,13 +10,6 @@ class terminalSpace(Env):
         self.observation_space = spaces.Box(low = np.zeros(self.observation_shape), 
                                             high = np.ones(self.observation_shape),
                                             dtype = np.float16)
-    
         
-        self.action_space = spaces.Box(np.array([0,0]), np.array([+30,+10]))
-                        
-        # Create a canvas to render the environment images upon 
-        self.canvas = np.ones(self.observation_shape) * 1
-        
-        # Define elements present inside the environment
-        self.elements = []
+        self.action_space = spaces.Box(np.array([0,0]), np.array([+30,+10])) # 1d space (# scouts, # demolishers)
 
