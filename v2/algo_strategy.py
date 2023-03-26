@@ -78,34 +78,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.build_defense(turn_state)
         #insert attack logic here lmao
 
-    def compute_threat(self, game_state, spawn_loc):
-        """
-        computes the expected damage to receive if spawn at given loc
-        """
-        target_edge = game_state.get_target_edge(spawn_loc)
-        
-        path = game_state.find_path_to_edge(spawn_loc, target_edge)
-        total_threat = 0
-        
-        for loc in path:
-            threatening_turrets = game_state.get_attackers(loc, 0)
-            for threatening_turret in threatening_turrets:
-                total_threat += threatening_turret.damage_i * threatening_turret.health / threatening_turret.max_health
-        return total_threat
-
-    def pick_side(self, game_state):
-        """
-        the algo will take care of selecting side
-        """
-        sides = [0, 1]
-        threats = [math.inf] * 2
-        for side in sides:
-            equivalent_locs = self.equivalent_locs[side]
-            threat = self.compute_threat(game_state, equivalent_locs)
-            threats[side] = threat
-        min_threat = min(threats)
-        self.best_side = threats.index(min_threat)
-
     def on_action_frame(self, turn_string):
         """
         This is the action frame of the game. This function could be called 
@@ -124,32 +96,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
+    ### ------------------- Turn Functions ------------------- ###
 
-    ###-------------------- Helper Functions -------------------###
-    def upkeep(self, turn_string):
-        game_state = gamelib.GameState(self.config, turn_string)
-        self.turns += 1
-        self.sp = game_state.get_resource(SP)
-        self.mp = game_state.get_resource(MP)
-
-
-    def build_supports(self, game_state):
-        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
-        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4], [17, 4], [10, 4]]
-        L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
-        for loca in L1:
-            s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
-        if self.sp < 4: return
-        for loca in L2:
-            s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
-        if self.sp < 4: return
-        for loca in L3:
-            s = game_state.attempt_spawn(SUPPORT, loca, 1)
-            if (s==1) : self.sp -= 4
-
-
+    
     def build_defense(self, game_state):
         """Builds our defensive structure - with side leaning."""
         #rebuild the initial defenses
@@ -184,17 +133,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         #spawn supports
         self.build_supports(game_state)
 
-
-    def select_left(self, game_state):
-        """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
-        game_state.attempt_spawn(WALL, [24, 11], 1)
-        game_state.attempt_remove([24,11])
-
-    def select_right(self, game_state):
-        """Chooses the right side to attack on - builds a wall on the left. Requires 0.5SP."""
-        game_state.attempt_spawn(WALL, [3, 11], 1)
-        game_state.attempt_remove([3,11])
-
     def build_initial(self, game_state):
         """Builds our initial defensive structure - with side leaning. """
         INITGUNS = [[1, 12], [26, 12], [4, 11]]
@@ -211,6 +149,70 @@ class AlgoStrategy(gamelib.AlgoCore):
             if (s==1) : self.sp -= 1.5
         game_state.attempt_spawn(WALL, [24, 11], 1)
         game_state.attempt_remove([24,11])
+
+    ###-------------------- Helper Functions -------------------###
+    def upkeep(self, turn_string):
+        """Currently unused start of turn code."""
+        game_state = gamelib.GameState(self.config, turn_string)
+        self.turns += 1
+        self.sp = game_state.get_resource(SP)
+        self.mp = game_state.get_resource(MP)
+
+    def compute_threat(self, game_state, spawn_loc):
+        """
+        computes the expected damage to receive if spawn at given loc
+        """
+        target_edge = game_state.get_target_edge(spawn_loc)
+        
+        path = game_state.find_path_to_edge(spawn_loc, target_edge)
+        total_threat = 0
+        
+        for loc in path:
+            threatening_turrets = game_state.get_attackers(loc, 0)
+            for threatening_turret in threatening_turrets:
+                total_threat += threatening_turret.damage_i * threatening_turret.health / threatening_turret.max_health
+        return total_threat
+
+    def pick_side(self, game_state):
+        """
+        the algo will take care of selecting side
+        """
+        sides = [0, 1]
+        threats = [math.inf] * 2
+        for side in sides:
+            equivalent_locs = self.equivalent_locs[side]
+            threat = self.compute_threat(game_state, equivalent_locs)
+            threats[side] = threat
+        min_threat = min(threats)
+        self.best_side = threats.index(min_threat)
+
+
+    def build_supports(self, game_state):
+        """Greedily build supports."""
+        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
+        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4], [17, 4], [10, 4]]
+        L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
+        for loca in L1:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+        if self.sp < 4: return
+        for loca in L2:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+        if self.sp < 4: return
+        for loca in L3:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+
+    def select_left(self, game_state):
+        """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
+        game_state.attempt_spawn(WALL, [24, 11], 1)
+        game_state.attempt_remove([24,11])
+
+    def select_right(self, game_state):
+        """Chooses the right side to attack on - builds a wall on the left. Requires 0.5SP."""
+        game_state.attempt_spawn(WALL, [3, 11], 1)
+        game_state.attempt_remove([3,11])
         
 
 
