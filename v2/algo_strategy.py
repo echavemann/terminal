@@ -159,8 +159,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
-        if game_state.turn_number != 0:
-            for side in self.enemysides:
+        for side in self.enemysides:
                 attacker_count = 0
                 for loc in side:
                     unit = game_state.contains_stationary_unit(loc)
@@ -170,6 +169,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                     self.enemy_weak_side = [side, attacker_count]
                     self.best_side = side
                     gamelib.debug_write('weak side: {}, has {} turrets'.format(self.enemy_weak_side, attacker_count))
+                    break
                 
     def on_action_frame(self, turn_string):
         """
@@ -239,7 +239,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         else: # defense case, spawn interceptors
             interceptor_loc = [[19, 5], [21, 7], [8, 5], [6, 7]]
             wall_loc = [[3, 11], [24, 11], [9, 4], [9, 5]]
-            if self.defended and self.damage_taken >= 3: # patch for loops on enemy side
+            if self.defended and self.damage_taken >= 2: # patch for loops on enemy side
                 interceptor_loc = [[8, 5], [19, 5]] 
                 wall_loc = [[10, 5], [10, 4], [10, 3], [3, 11], [24, 11]]              
             game_state.attempt_spawn(WALL, wall_loc, 1)
