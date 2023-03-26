@@ -239,7 +239,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             interceptor_loc = [[19, 5], [21, 7], [8, 5], [6, 7]]
             wall_loc = [[3, 11], [24, 11], [9, 4], [9, 5]]
             if self.defended and self.damage_taken >= 3: # patch for loops on enemy side
-                interceptor_loc = [[13, 0], [14, 0]]                
+                interceptor_loc = [[8, 5], [19, 5]] 
+                wall_loc = [[10, 5], [10, 4], [10, 3], [3, 11], [24, 11]]              
             game_state.attempt_spawn(WALL, wall_loc, 1)
             game_state.attempt_remove(wall_loc)
             game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 1)
