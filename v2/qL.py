@@ -68,6 +68,7 @@ class terminalSpace(Env):
         # parses the board to update the self metrics
 
     def step(self, actions): # -> observation, reward, terminated, info
+        
         #observation -> the 1 x 736 array done after action is complete
         #reward -> weighted sum of the following
             # 50% -> (points of damage to them - points of damage to us)
@@ -76,10 +77,12 @@ class terminalSpace(Env):
         #info -> None (for now)
 
         newState = self._refresh_state(actions)
-        board = self._parse_board(newState)
         self._update_self_metrics(newState)
+
+        board = self._parse_board(newState)
         reward = self._calc_reward(newState)
         terminated = self._calc_terminated(newState)
+        
         return newState, board, reward, terminated, self._get_info()
 
     def reset(self): # -> state, info
