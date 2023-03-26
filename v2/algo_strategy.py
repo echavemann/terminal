@@ -203,7 +203,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     ###-------------------- Helper Functions -------------------###
 
     def check_mp(self, game_state):
-        if 15 <= game_state.get_resource(MP, 1):
+        if 14 <= game_state.get_resource(MP, 1):
             #we need to defend
             self.defend = True
         else:
