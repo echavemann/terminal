@@ -55,7 +55,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         self.turns += 1
-        if self.turns == 1: self.build_initial(game_state)
+        if self.turns == 1: 
+            self.build_initial(game_state)
+            game_state.submit_turn()
+            return
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
@@ -79,7 +82,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
-    
+    ###-------------------- Helper Functions -------------------###
     def build_defenses(self, game_state):
         """Builds (and rebuilds) our defensive structure sans side selection."""
         INITGUNS = [[1, 12], [26, 12], [4, 11]]
