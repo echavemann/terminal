@@ -51,6 +51,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.equivalent_locs = self.spawn_locs
         self.best_side = 0
         self.movement_tracks = {0: 0, 1: 0} # 0 if left, 1 if right
+        self.enemy_weak_side = False # false if no exploitable side, 0 if left, 1 if right
+        self.enemy_left_side = [[0, 13], [1, 13], [2, 13], [3, 13], [4, 13], [5, 13], [6, 13], [7, 13], [1, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [2, 11], [3, 11], [4, 11], [5, 11], [6, 11], [7, 11], [3, 10], [4, 10], [5, 10], [6, 10], [7, 10], [4, 9], [5, 9], [6, 9], [7, 9], [5, 8], [6, 8], [7, 8], [6, 7], [7, 7], [7, 6]]
+        self.enemy_right_side = [[20, 13], [21, 13], [22, 13], [23, 13], [24, 13], [25, 13], [26, 13], [27, 13], [20, 12], [21, 12], [22, 12], [23, 12], [24, 12], [25, 12], [26, 12], [20, 11], [21, 11], [22, 11], [23, 11], [24, 11], [25, 11], [20, 10], [21, 10], [22, 10], [23, 10], [24, 10], [20, 9], [21, 9], [22, 9], [23, 9], [20, 8], [21, 8], [22, 8], [20, 7], [21, 7], [20, 6]]
+        self.enemysides = [self.enemy_left_side, self.enemy_right_side]
     
     def on_turn(self, turn_state):
         """
@@ -90,7 +94,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.build_defense(turn_state)
         self.handle_attack(turn_state)
         #insert attack logic here lmao
-
+        
+    def scan_side(self, game_state):
+        """scan if enemy has very weak side"""
+        for side in self.enemysides:
+            attacker_count = 0
+            for loc in side:
+                unit = game_state.contains_stationary_unit(loc)
+                if unit and unit.damage_i:
+                    attacker_count += 1
+            if attacker_count <= 1:
+                self.enemy_weak_side = self.enemysides.index(side)
+                
     def on_action_frame(self, turn_string):
         """
         This is the action frame of the game. This function could be called 
