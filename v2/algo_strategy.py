@@ -43,8 +43,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         SP = 0
         self.defense_queue = []
         self.scored_on_locations = []
-        start_turrets = [[1, 12], [26, 12], [4, 11]]
-        start_walls = [[0, 13], [27, 13], [2, 12], [4, 12], [22, 12], [23, 12], [25, 12], [5, 11], [21, 11], [22, 11], [6, 10], [21, 10], [7, 9], [20, 9], [7, 8], [20, 8], [8, 7], [19, 7], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6], [16, 6], [17, 6], [18, 6]]  
+        self.start_turrets = [[1, 12], [26, 12], [4, 11]]
+        self.start_walls = [[0, 13],[3,16], [27, 13], [2, 12], [4, 12], [22, 12], [23, 12], [25, 12], [5, 11], [21, 11], [22, 11], [6, 10], [21, 10], [7, 9], [20, 9], [7, 8], [20, 8], [8, 7], [19, 7], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6], [16, 6], [17, 6], [18, 6]]  
+        self.upgrade_walls = [[4, 15],[5, 16],[23,15],[22,16],[21,17]]
     
     def on_turn(self, turn_state):
         """
@@ -58,7 +59,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
         
-        self.determine_priority()
+        self.build_initial(game_state)
         game_state.submit_turn()
 
     def on_action_frame(self, turn_string):
@@ -79,6 +80,16 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
+
+    def build_initial(self, game_state):
+        for loca in self.start_turrets:
+            game_state.attempt_spawn(TURRET, loca, 1)
+        for loca in self.start_walls:
+            game_state.attempt_spawn(WALL, loca, 1)
+        for loca in self.upgrade_walls:
+            game_state.attempt_upgrade(loca)
+        
+
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
