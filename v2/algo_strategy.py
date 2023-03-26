@@ -55,6 +55,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         self.turns += 1
+        self.sp = game_state.get_resource(SP)
+        self.mp = game_state.get_resource(MP)
         if self.turns == 1: 
             self.build_initial(game_state)
             game_state.submit_turn()
@@ -82,18 +84,45 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 self.scored_on_locations.append(location)
+
     ###-------------------- Helper Functions -------------------###
+    def upkeep(self, turn_string):
+        game_state = gamelib.GameState(self.config, turn_string)
+        self.turns += 1
+        self.sp = game_state.get_resource(SP)
+        self.mp = game_state.get_resource(MP)
+
+
+    def build_supports(self, game_state):
+        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
+        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4], [17, 4], [10, 4]]
+        L3 = [[13, 3], [14, 3], [15, 3], [12, 3], [16, 3], [11, 3], [17, 3], [10, 3]]
+        for loca in L1:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+        if self.sp < 4: return
+        for loca in L2:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+        if self.sp < 4: return
+        for loca in L3:
+            s = game_state.attempt_spawn(SUPPORT, loca, 1)
+            if (s==1) : self.sp -= 4
+
     def build_defenses(self, game_state):
         """Builds (and rebuilds) our defensive structure sans side selection."""
         INITGUNS = [[1, 12], [26, 12], [4, 11]]
         INITWALLS = [[0, 13],[3,16], [27, 13], [2, 12], [4, 12],[22, 12], [23, 12], [25, 12], [5, 11], [21, 11], [22, 11], [6, 10], [21, 10], [7, 9], [20, 9], [7, 8], [20, 8], [8, 7], [19, 7], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6], [16, 6], [17, 6], [18, 6]]  
         INITUWALLS = [[4, 12],[23, 12],[5,11],[22,11],[6,10]]   
         for loca in INITGUNS:
-            game_state.attempt_spawn(TURRET, loca, 1)
+            s = game_state.attempt_spawn(TURRET, loca, 1)
+            if (s==1) : self.sp -= 6
         for loca in INITWALLS:
             game_state.attempt_spawn(WALL, loca, 1)
+            if (s==1) : self.sp -= 0.5
         for loca in INITUWALLS:
             game_state.attempt_upgrade(loca)
+            if (s==1) : self.sp -= 1.5
 
     def select_left(self, game_state):
         """Chooses the left side to attack on - builds a wall on the right. Requires 0.5SP."""
