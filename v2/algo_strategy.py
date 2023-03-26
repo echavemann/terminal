@@ -135,9 +135,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         #Fortify a side. 
         self.BuildL1(game_state)
         #Fortify L2s
-        
-        #spawn supports
-        self.build_supports(game_state)
+        self.BuildL2(game_state)
 
     def build_initial(self, game_state):
         """Builds our initial defensive structure - with side leaning. """
@@ -157,9 +155,35 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([24,11])
 
     ###-------------------- Helper Functions -------------------###
+    def BuildL2(self, game_state):
+        if self.fortside != 0: #we build rhs
+            self.L2RHS(game_state)
+            self.build_L2_supports(game_state)
+            self.L2LHS(game_state)
+        else:
+            self.L2LHS(game_state)
+            self.build_L2_supports(game_state)
+            self.L2RHS(game_state)
+        return
+
+    def L2RHS(self, game_state):
+        game_state.attempt_spawn(TURRET, [25, 11], 1) #RHS
+        walls = [[21,11], [20,9], [20,8]]
+        for loca in walls:
+            game_state.attempt_spawn(WALL, loca, 1)
+        game_state.attempt_spawn(TURRET, [21, 9], 1) #RHS
+
+    
+    def L2LHS(self, game_state):
+        game_state.attempt_spawn(TURRET, [2, 11], 1) #LHS
+        walls = [[7,9],[7,8],[2,12]]
+        for loca in walls:
+            game_state.attempt_spawn(WALL, loca, 1)
+        game_state.attempt_spawn(TURRET, [6, 9], 1) #LHS
+    
 
     def BuildL1(self, game_state):
-        if self.fortside != 0:
+        if self.fortside != 0: #we build RHS
             self.L1RHS(game_state)
             if self.sp < 0.5: return
             game_state.attempt_spawn(SUPPORT, [14, 5], 1)
@@ -234,28 +258,30 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         gamelib.debug_write(f"  best side is {self.best_side} with threat {min_threat}")
 
-
-    def build_supports(self, game_state):
-        """Greedily build supports."""
-        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
-        L2 = [[13, 4], [14, 4], [15, 4], [12, 4], [16, 4], [11, 4]]
-        L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
-        L4 = [[13, 2], [14, 2]]
+    #L1: 115-165
+    #L2: 105, 175, 114-164
+    #L3: [[13, 3], [14, 3], [15, 3], [12, 3]]
+    #L4: [[13, 2], [14, 2]]
+    def build_L1_supports(self, game_state):
+        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5]]
         for loca in L1:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
-        if self.sp < 4: return
+    def build_L2_supports(self, game_state):
+        L2 = [[10, 5], [17, 5],[11,4], [12, 4],[13, 4], [14, 4], [15, 4], [16, 4]]
         for loca in L2:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
-        if self.sp < 4: return
+
+    def build_L3_supports(self, game_state):
+        L3 = [[13, 3], [14, 3], [15, 3], [12, 3]]
         for loca in L3:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
     
-    def build_L1_supports(self, game_state):
-        L1 = [[13, 5], [14, 5], [15, 5], [12, 5], [16, 5], [11, 5], [17, 5], [10, 5]] #good shit copilot lmao
-        for loca in L1:
+    def build_L4_supports(self, game_state):
+        L4 = [[13, 2], [14, 2]]
+        for loca in L4:
             s = game_state.attempt_spawn(SUPPORT, loca, 1)
             if (s==1) : self.sp -= 4
 
