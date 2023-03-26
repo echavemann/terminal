@@ -74,6 +74,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         game_state.submit_turn()
         
+    def run_it(self, turn_state):
+        self.build_defense(turn_state)
+        
     def compute_threat(self, game_state, spawn_loc):
         """
         computes the expected damage to receive if spawn at given loc
