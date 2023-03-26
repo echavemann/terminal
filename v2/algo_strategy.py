@@ -50,7 +50,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.last_turn = math.inf
         self.fight_beta = False
                           # attack enemy right  attack enemy left
-        self.spawn_locs =  [[13,0], [14, 0]]
+        self.spawn_locs =  [[4,9], [23,9]]
         self.equivalent_locs = self.spawn_locs
         self.best_side = 0
         self.movement_tracks = {0: 0, 1: 0} # 0 if left, 1 if right
@@ -58,6 +58,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemy_left_side = [[0, 13], [1, 13], [2, 13], [3, 13], [4, 13], [5, 13], [6, 13], [7, 13], [1, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [2, 11], [3, 11], [4, 11], [5, 11], [6, 11], [7, 11], [3, 10], [4, 10], [5, 10], [6, 10], [7, 10], [4, 9], [5, 9], [6, 9], [7, 9], [5, 8], [6, 8], [7, 8], [6, 7], [7, 7], [7, 6]]
         self.enemy_right_side = [[20, 13], [21, 13], [22, 13], [23, 13], [24, 13], [25, 13], [26, 13], [27, 13], [20, 12], [21, 12], [22, 12], [23, 12], [24, 12], [25, 12], [26, 12], [20, 11], [21, 11], [22, 11], [23, 11], [24, 11], [25, 11], [20, 10], [21, 10], [22, 10], [23, 10], [24, 10], [20, 9], [21, 9], [22, 9], [23, 9], [20, 8], [21, 8], [22, 8], [20, 7], [21, 7], [20, 6]]
         self.enemysides = [self.enemy_left_side, self.enemy_right_side]
+        self.enemy_left_edge = [[5, 19], [4, 18], [3, 17], [2, 16], [1, 15], [0, 14]]
+        self.enemy_right_edge = [[22, 19], [23, 18], [24, 17], [25, 16], [26, 15], [27, 14]]
+        self.enemy_edges = [self.enemy_left_edge, self.enemy_right_edge]
     
     def on_turn(self, turn_state):
         """
@@ -101,8 +104,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             side, count = self.enemy_weak_side
             count = max(1, count)
             gamelib.debug_write('side: {}, count: {}'.format(side, count))
-            if mp >= count * 3 + 1: # if have enough mp for spawning scouts and demolishers
-                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count)
+            if mp >= count * 3 + 4: # if have enough mp for spawning scouts and demolishers
+                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[side], count - 1)
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[side], int(mp))
                 
     def regular_attack(self, game_state):
@@ -135,20 +138,32 @@ class AlgoStrategy(gamelib.AlgoCore):
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
         if game_state.turn_number != 0:
-            for side in self.enemysides:
-                attacker_count = 0
-                for loc in side:
+            # scan if enemy has exploitable shape by checking if enemy has units on the edge
+            exploitable = False
+            for edge in self.enemy_edges:
+                unit_count = 0
+                for loc in edge:
                     unit = game_state.contains_stationary_unit(loc)
-                    if unit and unit.damage_i > 0:
-                        if unit.upgraded:
-                            break
-                        else:
-                            attacker_count += 1
-                if attacker_count <= 1:
-                    side = not self.enemysides.index(side)
-                    self.enemy_weak_side = [side, attacker_count]
-                    self.best_side = side
-                    gamelib.debug_write('weak side: {}, has {} turrets'.format(self.enemy_weak_side, attacker_count))
+                    if unit:
+                        unit_count += 1
+                if unit_count == len(edge):
+                    exploitable = True
+                
+            if exploitable:
+                for side in self.enemysides:
+                    attacker_count = 0
+                    for loc in side:
+                        unit = game_state.contains_stationary_unit(loc)
+                        if unit and unit.damage_i > 0:
+                            if unit.upgraded:
+                                break
+                            else:
+                                attacker_count += 1
+                    if attacker_count <= 1:
+                        side = not self.enemysides.index(side)
+                        self.enemy_weak_side = [side, attacker_count]
+                        self.best_side = side
+                        gamelib.debug_write('weak side: {}, has {} turrets'.format(self.enemy_weak_side, attacker_count))
                 
     def on_action_frame(self, turn_string):
         """
@@ -411,7 +426,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         path = game_state.find_path_to_edge(spawn_loc, target_edge)
         total_threat = 0
         self.paths.append(path)
-        enemy_turrets = []
+        enemy_turrets = [[] for i in range(2)]
         for loc in path:
             threatening_turrets = game_state.get_attackers(loc, 0)
             for threatening_turret in threatening_turrets:
@@ -433,7 +448,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 equivalent_locs = self.equivalent_locs[side]
                 threat, enemy_terret_locs = self.compute_threat(game_state, equivalent_locs)
                 threats[side] = threat
-                enemy_turret_by_path.append(len(enemy_terret_locs))
+                enemy_turret_by_path.append(enemy_terret_locs)
             self.min_threat = min(threats)
             self.best_side = threats.index(self.min_threat)
             self.demolisher_required = len(enemy_turret_by_path[self.best_side])
