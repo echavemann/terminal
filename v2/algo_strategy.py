@@ -171,6 +171,33 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     ###-------------------- Helper Functions -------------------###
 
+    def build_endgame(self, game_state):
+        return
+
+    def BuildL4(self, game_state):
+        self.build_L4_supports(game_state)
+        if self.fortside != 0: #we build rhs
+            self.L4RHS(game_state)
+            self.L4LHS(game_state)
+        else: #we build lhs
+            self.L4LHS(game_state)
+            self.L4RHS(game_state)
+        return
+    
+    def L4RHS(self, game_state):
+        game_state.attempt_upgrade([2,11])
+        game_state.attempt_upgrade([5,10])
+        game_state.attempt_upgrade([6,9])
+    
+    def L4LHS(self, game_state):
+        game_state.attempt_upgrade([25,11])
+        game_state.attempt_upgrade([22,10])
+        game_state.attempt_upgrade([21,9])
+        walls = [[5,12], [6, 11]]
+        for loca in walls:
+            game_state.attempt_spawn(WALL, loca, 1)
+        
+
     def BuildL3(self, game_state):
         if self.fortside != 0: #RHS
             self.L3RHS(game_state)
