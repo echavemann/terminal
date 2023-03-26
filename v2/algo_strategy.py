@@ -151,7 +151,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp%3))
 
         #TODO: optimize this parameter
-        acceptance_param = (game_state.turn_number//3)
+        acceptance_param = (game_state.turn_number//10)
         if (score) > acceptance_param:
             self.good = True
         else:
