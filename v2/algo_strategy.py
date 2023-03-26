@@ -141,7 +141,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = int(game_state.get_resource(MP))
         rush_param = 1.5*(5+game_state.turn_number//10)
         #TODO: optimize this parameter
-        if (self.expectation[-1] - self.score[-1]) < 2:
+        acceptance_param = (5+game_state.turn_number//3)
+        if (self.expectation[-1] - self.score[-1]) < acceptance_param:
             #we are doing well. keep going. 
             if self.demolisher_required < 3:
                 #if 1 or 2 towers, we just rush wth our scouts.
