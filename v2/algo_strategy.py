@@ -162,6 +162,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_left(game_state)
         else:
             game_state.attempt_spawn(WALL, [[24,11],[3,11]], 1)
+            game_state.attempt_remove([[24,11],[3,11]])
             game_state.attempt_spawn(INTERCEPTOR, [[15,1],[12,1]], 1)
             game_state.attempt_spawn(INTERCEPTOR, [[6,7],[21,7]], 1)
         #spawn symmetrical turret
