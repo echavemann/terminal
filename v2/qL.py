@@ -23,13 +23,14 @@ class terminalSpace(Env):
         
         self.action_space = spaces.Box(np.array([0,0]), np.array([+30,+10]), dtype=np.int8) # 1d space (# scouts, # demolishers)
 
-    def _refresh_state(self, action) -> json:
-        return None
+    def _refresh_state(self, action) -> json: #TODO
+    
+        return function(action) # -> change function() this to the func that takes in input.
         #return raw board 
         #docs -> file:///Users/peter/Desktop/terminal/json-docs.html#frame-damage
         
     def _parse_board(self, board) -> np.array:
-        return None
+
         # parse to a 1 x 427 array, using the input board, and return that array
         
         # Grid of size 420      idx 0 - 419
@@ -42,16 +43,91 @@ class terminalSpace(Env):
             # val = 0 -> side_0, 1 -> side_1
         # health = 2            idx 425-426 
             # our health, their health
+
+        self.ourHealth, self.ourSP, self.ourMP = board["p1Stats"][0], board["p1Stats"][1], board["p1Stats"][2]
+        self.theirHealth, self.theirSP, self.theirMP = board["p2Stats"][0], board["p2Stats"][1], board["p2Stats"][2]
+
+        self.roundNum = board["turnInfo"][1]
+
+        p1Arr = {}
+        p2Arr = {}
+
+        p1Wall, p1Tur, p1Sup = board["p1Units"][0], board["p1Units"][1], board["p1Units"][2]
+        p2Wall, p2Tur, p2Sup = board["p2Units"][0], board["p2Units"][1], board["p2Units"][2]
+
+        for i in p1Wall:
+            p1Arr[(i[0], i[1])] = 1
+        for i in p1Tur:
+            p1Arr[(i[0], i[1])] = 2
+        for i in p1Sup:
+            p1Arr[(i[0], i[1])] = 3
+        
+        for i in p2Wall:
+            p2Arr[(i[0], i[1])] = 1
+        for i in p2Tur:
+            p2Arr[(i[0], i[1])] = 2
+        for i in p2Sup:
+            p2Arr[(i[0], i[1])] = 3
+
+        returnArr = []
+
+        initStart, initEnd = 13, 15
+        for y in range(0, 28):
+            if y <= 12:
+                for x in range(initStart, initEnd):
+                    if (x, y) in p1Arr:
+                        returnArr.append(p1Arr[(x, y)])
+                    else:
+                        returnArr.append(0)
+                
+                initStart -= 1
+                initEnd += 1
+            elif y >= 14:
+                for x in range(initStart, initEnd):
+                    if (x, y) in p2Arr:
+                        returnArr.append(p2Arr[(x, y)])
+                    else:
+                        returnArr.append(0)
+                
+                initStart += 1
+                initEnd -= 1
+            else:
+                for x in range(initStart, initEnd):
+                    if (x, y) in p1Arr:
+                        returnArr.append(p1Arr[(x, y)])
+                    else:
+                        returnArr.append(0)
+
+            returnArr.extend([self.ourSP, self.theirSP, self.ourMP, self.theirMP, self.side, self.ourHealth, self.theirHealth])
+        return returnArr
     
     def _calc_reward(self, board)-> float:
-        return None
+        breaches = board["Events"]["breach"]
+        damages = board["Events"]["damage"]
+
+        self_breached, other_breached = 0, 0
+        self_damaged, other_damaged = 0, 0
+
+        for breach in breaches:
+            if breach[4] == 1:
+                other_breached += 1
+            else:
+                self_breached += 1
+        
+        for damage in damages:
+            if damage[4] == 2:
+                other_damaged += damage[1]
+            else:
+                self_damaged += damage[1]
+        
+        return 0.5 * (other_damaged - self_damaged) + 0.5 * (other_breached - self_breached)
         # parse using the "breach" and "damage" fields
     
     def _calc_terminated(self, board)-> bool: 
-        return None
+        return "endStats" in board
         # prase to se if field "endStats" is in the raw board, if yes, return true
     
-    def _reset_game(self) -> json:
+    def _reset_game(self) -> json: #TODO
         return None
         # do something with the two algos to revert them back to init status. Return the initial game board
     
@@ -63,9 +139,7 @@ class terminalSpace(Env):
 
         self.roundNum = 0
 
-    def _update_self_metrics(self, board)-> None:
-        return None
-        # parses the board to update the self metrics
+        self.side = 0
 
     def step(self, actions): # -> observation, reward, terminated, info
         
@@ -77,13 +151,12 @@ class terminalSpace(Env):
         #info -> None (for now)
 
         newState = self._refresh_state(actions)
-        self._update_self_metrics(newState)
 
-        board = self._parse_board(newState)
-        reward = self._calc_reward(newState)
-        terminated = self._calc_terminated(newState)
-        
-        return newState, board, reward, terminated, self._get_info()
+        parsed = self._parse_board(json.loads(newState))
+        reward = self._calc_reward(json.loads(newState))
+        terminated = self._calc_terminated(json.loads(newState))
+
+        return parsed, reward, terminated, self._get_info()
 
     def reset(self): # -> state, info
         
@@ -91,6 +164,7 @@ class terminalSpace(Env):
         #info -> None (for now)
 
         self._reset_self_metrics()
+        
         return self._reset_game(), self._get_info()
     
     def _get_info(self):
