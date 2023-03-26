@@ -152,6 +152,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         #TODO: optimize this parameter
         acceptance_param = (game_state.turn_number//10)
+        acceptance_param = 2
         if (score) >= acceptance_param:
             self.good = True
         else:
