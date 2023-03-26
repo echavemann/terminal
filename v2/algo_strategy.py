@@ -141,7 +141,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         rush_param = 1.5*(5+game_state.turn_number//10)
         #TODO: optimize this parameter
         acceptance_param = (5+game_state.turn_number//3)
-        if (score) < acceptance_param:
+        if (score) > acceptance_param:
             self.good = True
         else:
             self.good = False
