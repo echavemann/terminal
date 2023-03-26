@@ -149,12 +149,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             #we are doing well. keep going. 
             if self.demolisher_required < 3:
                 #if 1 or 2 towers, we just rush wth our scouts.
-                if mp > rush_param:
-                    game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
+                #if mp > rush_param:
+                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp))
         else: #we need to change something
-            if mp >= 3*self.demolisher_required + 3: #spawn maximum number of demolishers to attempt to break through
-                game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], int(mp//3))
-                game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp%3))
+            #if mp >= 3*self.demolisher_required + 3: #spawn maximum number of demolishers to attempt to break through
+            game_state.attempt_spawn(DEMOLISHER, self.spawn_locs[self.best_side], int(mp//3))
+            game_state.attempt_spawn(SCOUT, self.spawn_locs[self.best_side], int(mp%3))
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
