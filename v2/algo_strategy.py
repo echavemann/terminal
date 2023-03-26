@@ -155,15 +155,34 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([24,11])
 
     ###-------------------- Helper Functions -------------------###
+
+    def BuildL3(self, game_state):
+        if self.fortside != 0: #RHS
+            self.L3RHS(game_state)
+            self.L3LHS(game_state)
+        else: #LHS
+            self.L3LHS(game_state)
+            self.L3RHS(game_state)
+        self.build_L3_supports(game_state)
+        return
+
+    def L3RHS(self, game_state):
+        game_state.attempt_upgrade([1,12])
+        game_state.attempt_upgrade([4,11])
+    
+    def L3LHS(self, game_state):
+        game_state.attempt_upgrade([26,12])
+        game_state.attempt_upgrade([23,11])
+
     def BuildL2(self, game_state):
         if self.fortside != 0: #we build rhs
             self.L2RHS(game_state)
-            self.build_L2_supports(game_state)
             self.L2LHS(game_state)
+            self.build_L2_supports(game_state)
         else:
             self.L2LHS(game_state)
-            self.build_L2_supports(game_state)
             self.L2RHS(game_state)
+            self.build_L2_supports(game_state)
         return
 
     def L2RHS(self, game_state):
