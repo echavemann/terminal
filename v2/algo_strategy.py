@@ -5,6 +5,7 @@ import warnings
 from sys import maxsize
 import json
 import heapq as pq
+import pandas as pd
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -20,14 +21,9 @@ Advanced strategy tips:
 """
 
 def ema(data, alpha):
-    ema_values = [data[0]]
-    for i in range(1, len(data)):
-        ema_value = alpha * data[i] + (1 - alpha) * ema_values[-1]
-        if len(ema_values) <= i-1:
-            ema_values.append(ema_value)
-        else:
-            ema_values[i-1] = ema_value
-    return ema_values
+    df = pd.DataFrame(data, columns = ['data'])
+    ema = df['data'].ewm(alpha = 0.7).mean().tolist()[-1]
+    return ema
 
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
@@ -112,7 +108,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = game_state.get_resource(MP)
         if not self.enemy_weak_side:
             # regular attack logic
-            if ema(self.enemy_attack_thresholds, 0.6)[-1] <= 6:
+            if len(self.enemy_attack_thresholds) and ema(self.enemy_attack_thresholds, 0.6) <= 6:
                 game_state.attempt_spawn(INTERCEPTOR, self.spawn_locs[not self.best_side], 1)
             self.attack_v2(game_state)
         else: # handle enemy weak side exploit
@@ -172,6 +168,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         
     def scan_side(self, game_state):
         """scan if enemy has very weak side"""
+        counts = [math.inf, math.inf]
         for side in self.enemysides:
             attacker_count = 0
             for loc in side:
@@ -182,9 +179,13 @@ class AlgoStrategy(gamelib.AlgoCore):
                 side = not self.enemysides.index(side)
                 self.enemy_weak_side = [side, attacker_count]
                 self.best_side = side
+                counts[side] = attacker_count
                 gamelib.debug_write('weak side: {}, has {} turrets'.format(self.enemy_weak_side, attacker_count))
-                break
-                
+        count = min(counts)
+        self.best_side = counts.index(count)
+        self.enemy_weak_side = [self.best_side, count]
+            
+                            
     def on_action_frame(self, turn_string):
         """
         This is the action frame of the game. This function could be called 
@@ -306,13 +307,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write("checking mp")
 
         if len(self.enemy_attack_thresholds) >= 1:
-            threshold = ema(self.enemy_attack_thresholds, 0.6)[-1]
+            threshold = ema(self.enemy_attack_thresholds, 0.6)
             gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
         if threshold <= 6:
             self.defend = False
-        elif threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 22:
+        elif threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) <= 17:
             #we need to defend
             self.defend = True
         else:
