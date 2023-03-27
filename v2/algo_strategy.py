@@ -19,10 +19,14 @@ Advanced strategy tips:
   the actual current map state.
 """
 
-def ema(data, alpha = 0.6):
+def ema(data, alpha):
     ema_values = [data[0]]
     for i in range(1, len(data)):
-        ema_values.append(alpha * data[i] + (1 - alpha) * ema_values[-1])
+        ema_value = alpha * data[i] + (1 - alpha) * ema_values[-1]
+        if len(ema_values) <= i-1:
+            ema_values.append(ema_value)
+        else:
+            ema_values[i-1] = ema_value
     return ema_values
 
 class AlgoStrategy(gamelib.AlgoCore):
