@@ -327,11 +327,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         supports = [[10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [11, 4],[12, 4], [13, 4], [14, 4],[15, 4],[16, 4],
                     [12, 3],[13, 3], [14, 3], [15, 3], [13, 2], [14, 2]]
         gunners = [[18, 7], [9,7], [19, 8], [8,8]]
+        guns2 = [[18, 8]]
         for loca in gunners:
             game_state.attempt_spawn(TURRET, loca, 1)
+        for loca in guns2:
+            game_state.attempt_spawn(TURRET, loca, 1)
+    
+        for loca in gunners:
+            game_state.attempt_upgrade(loca)
+        for loca in guns2:
             game_state.attempt_upgrade(loca)
         for loca in walls:
             game_state.attempt_upgrade(loca)
+        
         return
 
     
