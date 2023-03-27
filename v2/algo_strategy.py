@@ -149,7 +149,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         score = self.ehp - game_state.enemy_health
         self.ehp = game_state.enemy_health
         mp = int(game_state.get_resource(MP))
-        rush_param = 1.75*(5+game_state.turn_number//10)
+        rush_param = 2*(5+game_state.turn_number//10)
         if mp < rush_param: return # we need to save more.
 
         if self.good:
@@ -248,7 +248,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.select_left(game_state)
         else: # defense case, spawn interceptors
             interceptor_loc = [[19, 5], [21, 7], [8, 5], [6, 7]]
-            wall_loc = [[3, 11], [24, 10], [9, 4], [9, 5]]
+            wall_loc = [[3, 11], [24, 11], [9, 4], [9, 5]]
             if self.defended and self.damage_taken >= 2: # patch for loops on enemy side
                 interceptor_loc = [[8, 5], [19, 5]] 
                 wall_loc = [[10, 5], [10, 4], [10, 3], [3, 11], [24, 10]]
@@ -389,7 +389,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         return
 
     def L2RHS(self, game_state):
-        s = game_state.attempt_spawn(TURRET, [25, 12], 1) #RHS
+        s = game_state.attempt_spawn(TURRET, [25, 11], 1) #RHS
         if (s==1) : self.sp -= 6
         if self.sp < 6.5: return
         walls = [[21,11], [20,9], [20,8]]
