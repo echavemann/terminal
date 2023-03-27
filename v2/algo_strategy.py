@@ -108,6 +108,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         mp = game_state.get_resource(MP)
         if not self.enemy_weak_side:
             # regular attack logic
+            if ema(self.enemy_attack_thresholds, 0.6)[-1] <= 6:
+                game_state.attempt_spawn(INTERCEPTOR, self.spawn_locs[not self.best_side], 1)
             self.attack_v2(game_state)
         else: # handle enemy weak side exploit
             side, count = self.enemy_weak_side
@@ -215,7 +217,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 enemy_mp_spent += 1
             for demolisher in demolishers:
                 enemy_mp_spent += 3
-            if enemy_mp_spent >6:
+            if enemy_mp_spent > 0:
                 self.enemy_attack_thresholds.append(enemy_mp_spent)
             
             
@@ -249,7 +251,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             wall_loc = [[3, 11], [24, 10], [9, 4], [9, 5]]
             if self.defended and self.damage_taken >= 2: # patch for loops on enemy side
                 interceptor_loc = [[8, 5], [19, 5]] 
-                wall_loc = [[10, 5], [10, 4], [10, 3], [3, 11], [24, 10]]              
+                wall_loc = [[10, 5], [10, 4], [10, 3], [3, 11], [24, 10]]
             game_state.attempt_spawn(WALL, wall_loc, 1)
             game_state.attempt_remove(wall_loc)
             game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 1)
@@ -304,7 +306,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             gamelib.debug_write("threshold: {}".format(threshold))
         else:
             threshold = 14
-        if threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 22:
+        if threshold <= 6:
+            self.defend = False
+        elif threshold <= game_state.get_resource(MP, 1) and game_state.get_resource(MP, 0) < 22:
             #we need to defend
             self.defend = True
         else:
